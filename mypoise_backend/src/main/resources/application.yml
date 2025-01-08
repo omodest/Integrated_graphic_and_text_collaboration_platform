@@ -1,0 +1,58 @@
+server:
+  # 配置端口
+  port: 8081
+  # 配置统一前缀
+  servlet:
+    context-path: /api
+spring:
+  application:
+    name: mypoise_backend
+  # mysql 配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/cloud_library
+    username: root
+    password: 20020901lcb
+mybatis-plus:
+  # mybatis-plus 配置
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #仅在开发环境需要记录日志
+  global-config:
+    db-config:
+      # 配置逻辑删除，包括逻辑删除字段、逻辑已删除值、逻辑未删除值
+      logic-delete-field: isDelete
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+knife4j:
+  enable: true # 开启knife4j
+  openapi:
+    title: "图文一体化协同平台"
+    version: 1.0
+    group:
+      default:
+        api-rule: package
+        api-rule-resources:
+          - integrated.graphic_and_text.collaboration.mypoise.controller
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
