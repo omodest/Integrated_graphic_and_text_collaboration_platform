@@ -1,10 +1,12 @@
 package integrated.graphic_and_text.collaboration.mypoise.services.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import integrated.graphic_and_text.collaboration.mypoise.config.EmailConfig;
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.user.UserQueryRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
 import integrated.graphic_and_text.collaboration.mypoise.entity.vo.UserInfoVO;
 import integrated.graphic_and_text.collaboration.mypoise.exception.BusinessException;
@@ -18,6 +20,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 import org.springframework.mail.javamail.JavaMailSender;
 
@@ -25,7 +28,10 @@ import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
+import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static integrated.graphic_and_text.collaboration.mypoise.constant.EmailConstant.*;
 import static integrated.graphic_and_text.collaboration.mypoise.constant.LockConstant.EMAIL_REGISTER;
@@ -178,6 +184,76 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         UserInfoVO userInfoVO = new UserInfoVO();
         BeanUtils.copyProperties(user,userInfoVO);
         return userInfoVO;
+    }
+
+    @Override
+    public User getCurrentUser(HttpServletRequest httpServletRequest) {
+        // 尝试从 session中获取当前登录用户
+        User user = (User)httpServletRequest.getSession().getAttribute(USER_LOGIN_STATE);
+        if (user == null || user.getId() <= 0){
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        // 查数据库；防止因中途用户销号，但是session缓存中数据依然存在的问题
+        Long userId = user.getId();
+        User getUserById = this.getById(userId);
+        if (getUserById == null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        return getUserById;
+    }
+
+    @Override
+    public Boolean userLogout(HttpServletRequest httpServletRequest) {
+        User user = (User)httpServletRequest.getSession().getAttribute(USER_LOGIN_STATE);
+        if (user == null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        httpServletRequest.getSession().removeAttribute(USER_LOGIN_STATE);
+        return true;
+    }
+
+    @Override
+    public UserInfoVO getUserVo(User user) {
+        if (user == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        UserInfoVO userInfoVO = new UserInfoVO();
+        BeanUtils.copyProperties(user, userInfoVO);
+        return userInfoVO;
+    }
+
+    @Override
+    public List<UserInfoVO> getListUserVo(List<User> userList) {
+        if (CollectionUtils.isEmpty(userList)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return userList.stream().map(this::getUserVo).collect(Collectors.toList());
+    }
+
+    @Override
+    public QueryWrapper<User> getUserQueryWrapper(UserQueryRequest userQueryRequest) {
+        // 参数校验
+        if (ObjectUtil.isEmpty(userQueryRequest)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "查询请求对象为空");
+        }
+        // 获取请求参数
+        Long id = userQueryRequest.getId();
+        String userName = userQueryRequest.getUserName();
+        String userAccount = userQueryRequest.getUserAccount();
+        String userProfile = userQueryRequest.getUserProfile();
+        String userRole = userQueryRequest.getUserRole();
+        String sortFiled = userQueryRequest.getSortFiled();
+        String sortOrder = userQueryRequest.getSortOrder();
+        // 拼接queryWrapper
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(ObjectUtil.isNotEmpty(id),"id", id);
+        queryWrapper.like(StrUtil.isNotEmpty(userName),"userName", userName);
+        queryWrapper.like(StrUtil.isNotEmpty(userAccount), "userAccount", userAccount);
+        queryWrapper.like(StrUtil.isNotEmpty(userProfile), "userProfile", userProfile);
+        queryWrapper.eq(StrUtil.isNotEmpty(userRole), "userRole", userRole);
+        queryWrapper.orderBy(StrUtil.isNotEmpty(sortFiled),sortOrder.equals("ascend"), sortOrder);
+
+        return queryWrapper;
     }
 }
 

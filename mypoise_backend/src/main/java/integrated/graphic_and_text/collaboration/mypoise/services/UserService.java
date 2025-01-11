@@ -1,11 +1,14 @@
 package integrated.graphic_and_text.collaboration.mypoise.services;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.user.UserQueryRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import integrated.graphic_and_text.collaboration.mypoise.entity.vo.UserInfoVO;
 
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
 * @author poise
@@ -77,4 +80,38 @@ public interface UserService extends IService<User> {
      */
     UserInfoVO getLoginUserVo(User user);
 
+    /**
+     * 获取当前登录用户信息
+     * @param httpServletRequest
+     * @return
+     */
+    User getCurrentUser(HttpServletRequest httpServletRequest);
+
+    /**
+     * 用户登录态 注销
+     * @param httpServletRequest
+     * @return
+     */
+    Boolean userLogout(HttpServletRequest httpServletRequest);
+
+    /**
+     * 获取单个用户的脱敏信息
+     * @param user
+     * @return
+     */
+    UserInfoVO getUserVo(User user);
+
+    /**
+     * 获取脱敏用户信息列表
+     * @param userList
+     * @return
+     */
+    List<UserInfoVO> getListUserVo(List<User> userList);
+
+    /**
+     * 拼接对用户查询
+     * @param userQueryRequest
+     * @return
+     */
+    QueryWrapper<User> getUserQueryWrapper(UserQueryRequest userQueryRequest);
 }

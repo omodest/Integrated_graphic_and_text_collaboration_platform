@@ -1,0 +1,34 @@
+package integrated.graphic_and_text.collaboration.mypoise.entity.dto.user;
+
+import lombok.Data;
+
+import java.io.Serializable;
+
+@Data
+public class UserUpdateRequest implements Serializable {
+
+    /**
+     * id
+     */
+    private Long id;
+
+    /**
+     * 用户昵称
+     */
+    private String userName;
+
+    /**
+     * 用户头像
+     */
+    private String userAvatar;
+
+    /**
+     * 简介
+     */
+    private String userProfile;
+
+    private String userRole;
+
+    private static final long serialVersionUID = 1L;
+}
+
