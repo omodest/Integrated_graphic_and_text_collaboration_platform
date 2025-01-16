@@ -7,9 +7,11 @@ import checkAccess from './checkAccess'
  * 路由守卫
  */
 router.beforeEach(async (to, from, next) => {
-  console.log('1212')
+  // 拿到用户权限
   const loginUserStore = useLoginUserStore()
   let loginUser = loginUserStore.loginUser
+
+  // 目标路由
   const needAccess = (to.meta?.access as string) ?? ACCESS_ENUM.NOT_LOGIN
 
   // 如果之前没登陆过，自动登录
@@ -18,7 +20,7 @@ router.beforeEach(async (to, from, next) => {
     await loginUserStore.fetchLoginUser()
     loginUser = loginUserStore.loginUser
   }
-  console.log(loginUser.userRole)
+
   // 要跳转的页面必须要登陆
   if (needAccess !== ACCESS_ENUM.NOT_LOGIN) {
     // 如果没登陆，跳转到登录页面
@@ -27,7 +29,7 @@ router.beforeEach(async (to, from, next) => {
       return
     }
     // 如果已经登陆了，但是权限不足，那么跳转到无权限页面
-    if (!checkAccess(loginUser, needAccess)) {
+    if (!(await checkAccess(loginUser, needAccess))) {
       next('/noAuth')
       return
     }

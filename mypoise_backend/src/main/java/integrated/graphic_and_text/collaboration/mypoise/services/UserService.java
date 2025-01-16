@@ -2,6 +2,7 @@ package integrated.graphic_and_text.collaboration.mypoise.services;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.user.UserQueryRequest;
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.user.UserUpdateRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import integrated.graphic_and_text.collaboration.mypoise.entity.vo.UserInfoVO;
@@ -32,15 +33,13 @@ public interface UserService extends IService<User> {
 //     * @return
 //     */
 //    UserInfoVO userLogin();
-//
-//
-//    /**
-//     * 邮箱登录
-//     * @param userAccount
-//     * @param password
-//     * @return
-//     */
-//    UserInfoVO userLogin(String userAccount);
+
+
+    /**
+     * 邮箱登录验证
+     * @return
+     */
+    User userEmailLogin(String email, String captcha, HttpServletRequest httpServletRequest);
 
 
     /**
@@ -51,6 +50,23 @@ public interface UserService extends IService<User> {
      * @return
      */
     Long userRegister(String userAccount, String password, String email, String captcha);
+
+    /**
+     * 邮箱修改密码
+     * @param email
+     * @param captcha
+     * @return
+     */
+    boolean userEmailEditPwd(String email, String captcha,String userPassword,HttpServletRequest httpServletRequest);
+
+    /**
+     * 邮箱绑定
+     * @param email
+     * @param captcha
+     * @param httpServletRequest
+     * @return
+     */
+    boolean userBind(String email, String captcha, HttpServletRequest httpServletRequest);
 
     /**
      * 发送验证码
@@ -114,4 +130,20 @@ public interface UserService extends IService<User> {
      * @return
      */
     QueryWrapper<User> getUserQueryWrapper(UserQueryRequest userQueryRequest);
+
+
+
+    /**
+     * 简单用户签到
+     * @return
+     */
+    boolean doCurrentDaySign(HttpServletRequest httpServletRequest);
+
+    /**
+     * 获取到当天 连续签到的天数
+     * @param httpServletRequest
+     * @return
+     */
+    Integer getConstantSignDay(HttpServletRequest httpServletRequest);
+
 }

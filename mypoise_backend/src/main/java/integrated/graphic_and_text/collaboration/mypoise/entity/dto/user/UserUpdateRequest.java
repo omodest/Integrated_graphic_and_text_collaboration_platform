@@ -1,15 +1,14 @@
 package integrated.graphic_and_text.collaboration.mypoise.entity.dto.user;
 
 import lombok.Data;
+import org.omg.CORBA.PRIVATE_MEMBER;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Data
 public class UserUpdateRequest implements Serializable {
 
-    /**
-     * id
-     */
     private Long id;
 
     /**
@@ -17,10 +16,7 @@ public class UserUpdateRequest implements Serializable {
      */
     private String userName;
 
-    /**
-     * 用户头像
-     */
-    private String userAvatar;
+    private String userAccount;
 
     /**
      * 简介
@@ -28,6 +24,10 @@ public class UserUpdateRequest implements Serializable {
     private String userProfile;
 
     private String userRole;
+    /**
+     * 会员过期时间
+     */
+    private Date vip_expire;
 
     private static final long serialVersionUID = 1L;
 }

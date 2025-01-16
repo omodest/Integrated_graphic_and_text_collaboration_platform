@@ -5,7 +5,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class UserEmailLoginRequest implements Serializable {
+public class UserEmailEditPwdRequest implements Serializable {
 
     /**
      * 用户qq邮箱
@@ -16,6 +16,8 @@ public class UserEmailLoginRequest implements Serializable {
      * 验证码
      */
     private String captcha;
+
+    private String userPassword;
 
 
     private static final long serialVersionUID = 1L;

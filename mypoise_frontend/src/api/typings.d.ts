@@ -5,6 +5,12 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseInt_ = {
+    code?: number
+    data?: number
+    message?: string
+  }
+
   type BaseResponseLong_ = {
     code?: number
     data?: number
@@ -14,6 +20,12 @@ declare namespace API {
   type BaseResponsePageUserInfoVO_ = {
     code?: number
     data?: PageUserInfoVO_
+    message?: string
+  }
+
+  type BaseResponseString_ = {
+    code?: number
+    data?: string
     message?: string
   }
 
@@ -37,6 +49,8 @@ declare namespace API {
   type getCaptchaUsingGETParams = {
     /** email */
     email?: string
+    /** repeat */
+    repeat?: boolean
   }
 
   type getUserByIdUsingPOSTParams = {
@@ -55,6 +69,10 @@ declare namespace API {
     records?: UserInfoVO[]
     size?: number
     total?: number
+  }
+
+  type uploadFileUsingPOSTParams = {
+    biz?: string
   }
 
   type User = {
@@ -77,10 +95,10 @@ declare namespace API {
 
   type UserAddRequest = {
     userAccount?: string
-    userAvatar?: string
     userName?: string
     userProfile?: string
     userRole?: string
+    vip_expire?: string
   }
 
   type UserBindRequest = {
@@ -137,5 +155,14 @@ declare namespace API {
     email?: string
     userAccount?: string
     userPassword?: string
+  }
+
+  type UserUpdateRequest = {
+    id?: number
+    userAccount?: string
+    userName?: string
+    userProfile?: string
+    userRole?: string
+    vip_expire?: string
   }
 }

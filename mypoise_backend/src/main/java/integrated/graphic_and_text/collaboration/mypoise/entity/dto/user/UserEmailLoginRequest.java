@@ -2,18 +2,20 @@ package integrated.graphic_and_text.collaboration.mypoise.entity.dto.user;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class UserLoginRequest {
+public class UserEmailLoginRequest implements Serializable {
 
     /**
-     * 账号
+     * 用户qq邮箱
      */
-    private String userAccount;
+    private String email;
 
     /**
-     * 密码
+     * 验证码
      */
-    private String userPassword;
+    private String captcha;
 
 
     private static final long serialVersionUID = 1L;

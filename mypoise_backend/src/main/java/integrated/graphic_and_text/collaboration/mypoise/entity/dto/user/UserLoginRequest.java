@@ -2,8 +2,10 @@ package integrated.graphic_and_text.collaboration.mypoise.entity.dto.user;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class UserLoginRequest {
+public class UserLoginRequest implements Serializable {
 
     /**
      * 账号

@@ -17,36 +17,6 @@ export async function getCaptchaUsingGet(
   })
 }
 
-/** createUser GET /api/user/create */
-export async function createUserUsingGet(
-  body: API.UserAddRequest,
-  options?: { [key: string]: any }
-) {
-  return request<API.BaseResponseLong_>('/api/user/create', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
-    ...(options || {}),
-  })
-}
-
-/** createUser PUT /api/user/create */
-export async function createUserUsingPut(
-  body: API.UserAddRequest,
-  options?: { [key: string]: any }
-) {
-  return request<API.BaseResponseLong_>('/api/user/create', {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
-    ...(options || {}),
-  })
-}
-
 /** createUser POST /api/user/create */
 export async function createUserUsingPost(
   body: API.UserAddRequest,
@@ -54,36 +24,6 @@ export async function createUserUsingPost(
 ) {
   return request<API.BaseResponseLong_>('/api/user/create', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
-    ...(options || {}),
-  })
-}
-
-/** createUser DELETE /api/user/create */
-export async function createUserUsingDelete(
-  body: API.UserAddRequest,
-  options?: { [key: string]: any }
-) {
-  return request<API.BaseResponseLong_>('/api/user/create', {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
-    ...(options || {}),
-  })
-}
-
-/** createUser PATCH /api/user/create */
-export async function createUserUsingPatch(
-  body: API.UserAddRequest,
-  options?: { [key: string]: any }
-) {
-  return request<API.BaseResponseLong_>('/api/user/create', {
-    method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -103,6 +43,29 @@ export async function deleteUserUsingPost(
     params: {
       ...params,
     },
+    ...(options || {}),
+  })
+}
+
+/** doSign POST /api/user/doSign */
+export async function doSignUsingPost(options?: { [key: string]: any }) {
+  return request<API.BaseResponseBoolean_>('/api/user/doSign', {
+    method: 'POST',
+    ...(options || {}),
+  })
+}
+
+/** userEditMyVo POST /api/user/edit/my/vo */
+export async function userEditMyVoUsingPost(
+  body: API.UserInfoVO,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseUserInfoVO_>('/api/user/edit/my/vo', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
     ...(options || {}),
   })
 }
@@ -175,6 +138,14 @@ export async function getLoginUserUsingGet(options?: { [key: string]: any }) {
   })
 }
 
+/** getSignNum GET /api/user/get/totalSign */
+export async function getSignNumUsingGet(options?: { [key: string]: any }) {
+  return request<API.BaseResponseInt_>('/api/user/get/totalSign', {
+    method: 'GET',
+    ...(options || {}),
+  })
+}
+
 /** getUserVoById POST /api/user/get/vo/by/id */
 export async function getUserVoByIdUsingPost(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
@@ -234,6 +205,21 @@ export async function doEmailRegisterUsingPost(
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResponseLong_>('/api/user/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** updateUser POST /api/user/update */
+export async function updateUserUsingPost(
+  body: API.UserUpdateRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseUserInfoVO_>('/api/user/update', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

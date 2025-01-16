@@ -7,6 +7,7 @@ import App from './App.vue'
 import router from './router'
 import Antd from 'ant-design-vue'
 import 'ant-design-vue/dist/reset.css'
+import '@/access'
 
 // 创建vue实例，并绑定到根组件App中
 const app = createApp(App)

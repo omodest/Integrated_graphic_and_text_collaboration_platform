@@ -1,22 +1,27 @@
 package integrated.graphic_and_text.collaboration.mypoise.services.impl;
 
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import integrated.graphic_and_text.collaboration.mypoise.config.EmailConfig;
+import integrated.graphic_and_text.collaboration.mypoise.constant.UserConstant;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.user.UserQueryRequest;
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.user.UserUpdateRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
 import integrated.graphic_and_text.collaboration.mypoise.entity.vo.UserInfoVO;
 import integrated.graphic_and_text.collaboration.mypoise.exception.BusinessException;
 import integrated.graphic_and_text.collaboration.mypoise.exception.ErrorCode;
+import integrated.graphic_and_text.collaboration.mypoise.exception.ThrowUtils;
 import integrated.graphic_and_text.collaboration.mypoise.mapper.UserMapper;
 import integrated.graphic_and_text.collaboration.mypoise.services.UserService;
 import integrated.graphic_and_text.collaboration.mypoise.utils.EmailUtils;
 import integrated.graphic_and_text.collaboration.mypoise.utils.RedissonLockUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.connection.BitFieldSubCommands;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -28,7 +33,11 @@ import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -83,7 +92,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 3. 校验是否能登录
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", userAccount);
-        queryWrapper.eq("password", encryptPassword);
+        queryWrapper.eq("userPassword", encryptPassword);
         User user = this.baseMapper.selectOne(queryWrapper);
         // 3. 登录
         if (user == null){
@@ -94,6 +103,61 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 5. 返回给前端的用户信息脱敏
         return getLoginUserVo(user);
     }
+
+    @Override
+    public User userEmailLogin(String email, String captcha, HttpServletRequest httpServletRequest) {
+        // 1. 参数校验
+        if (!Pattern.matches(EMAIL_PATTERN, email)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 2. 验证码校验
+        String cacheCaptcha = (String) redisTemplate.opsForValue().get(CAPTCHA_CACHE_KEY + email);
+        if (StringUtils.isEmpty(cacheCaptcha)){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "验证码过期!!!");
+        }
+        captcha = captcha.trim();
+        if (!cacheCaptcha.equals(captcha)){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "验证码错误");
+        }
+        // 3. 根据email找用户
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("email", email);
+        User user = this.getOne(queryWrapper);
+        httpServletRequest.getSession().setAttribute(USER_LOGIN_STATE, user);
+        return user;
+    }
+
+    @Override
+    public boolean userEmailEditPwd(String email, String captcha, String userPassword, HttpServletRequest httpServletRequest) {
+        User user = this.userEmailLogin(email, captcha,  httpServletRequest);
+        String encryptPassword = this.getEncryptPassword(userPassword);
+        user.setUserPassword(encryptPassword);
+        return this.updateById(user);
+    }
+
+    @Override
+    public boolean userBind(String email, String captcha, HttpServletRequest httpServletRequest) {
+        // 拿到用户
+        User currentUser = this.getCurrentUser(httpServletRequest);
+        // 发送验证码、验证验证码
+        // 1. 参数校验
+        if (!Pattern.matches(EMAIL_PATTERN, email)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 2. 验证码校验
+        String cacheCaptcha = (String) redisTemplate.opsForValue().get(CAPTCHA_CACHE_KEY + email);
+        if (StringUtils.isEmpty(cacheCaptcha)){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "验证码过期!!!");
+        }
+        captcha = captcha.trim();
+        if (!cacheCaptcha.equals(captcha)){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "验证码错误");
+        }
+        // 添加记录
+        currentUser.setEmail(email);
+        return this.updateById(currentUser);
+    }
+
 
     @Override
     public Long userRegister(String userAccount, String password,String email, String captcha) {
@@ -110,6 +174,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (!Pattern.matches(EMAIL_PATTERN, email)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "不合法的邮箱地址！");
         }
+
+
         // 2. 验证码校验
         String cacheCaptcha = (String) redisTemplate.opsForValue().get(CAPTCHA_CACHE_KEY + email);
         if (StringUtils.isEmpty(cacheCaptcha)){
@@ -254,6 +320,84 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.orderBy(StrUtil.isNotEmpty(sortFiled),sortOrder.equals("ascend"), sortOrder);
 
         return queryWrapper;
+    }
+
+
+    @Override
+    public boolean doCurrentDaySign(HttpServletRequest httpServletRequest) {
+        // 1. 验证当前用户
+        User loginUser = this.getCurrentUser(httpServletRequest);
+        Long loginUserId = loginUser.getId();
+        ThrowUtils.throwIf(loginUserId <= 0,ErrorCode.PARAMS_ERROR,"登录状态异常");
+        // 2. 获取当天日期 年+月 的格式
+        LocalDateTime now = LocalDateTime.now();
+        String nowFormat = now.format(DateTimeFormatter.ofPattern("yyyyMM"));
+        // 3. 使用用户唯一标识 + 当前日期，作为存redis 时的唯一标识
+        String key = "sign-" + loginUserId + "-" + nowFormat;
+        // 4. 获取今天是本月第几天，好用来实现签到功能
+        int dayOfMonth = now.getDayOfMonth();
+        // 5. 写redis操作
+        Boolean result = redisTemplate.opsForValue().setBit(key, dayOfMonth - 1, true);
+        ThrowUtils.throwIf(Boolean.TRUE.equals(result),ErrorCode.OPERATION_ERROR,"今日已签到");
+        // 6. 签到的奖励可以写到这里, 目前系统设计的是连续签到七天 获得1天会员;连续签到30天送 5天会员
+        // 获取当前日期和时间
+        Date currentDate = new Date();
+        Integer constantSignDay = this.getConstantSignDay(httpServletRequest);
+        // 使用 Calendar 增加时间
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentDate);
+        if (constantSignDay % 7 == 0){
+            calendar.add(Calendar.DAY_OF_MONTH, 1); // 增加 5 天
+            loginUser.setVip_expire(calendar.getTime());
+        }
+        if (constantSignDay % 30 == 0){
+            calendar.add(Calendar.DAY_OF_MONTH, 5); // 增加 5 天
+            loginUser.setVip_expire(calendar.getTime());
+        }
+        loginUser.setUserRole(UserConstant.VIP_ROLE);
+        loginUser.setEditTime(currentDate);
+        this.updateById(loginUser);
+        return true;
+    }
+
+    //  这里可以添加连续多少多少天签到，获得奖励
+    @Override
+    public Integer getConstantSignDay(HttpServletRequest httpServletRequest) {
+        // 1. 验证当前用户
+        User loginUser = this.getCurrentUser(httpServletRequest);
+        Long loginUserId = loginUser.getId();
+        ThrowUtils.throwIf(loginUserId <= 0,ErrorCode.PARAMS_ERROR,"登录状态异常");
+        // 2. 获取当天日期 年+月 的格式
+        LocalDateTime now = LocalDateTime.now();
+        String nowFormat = now.format(DateTimeFormatter.ofPattern("yyyyMM"));
+        // 3. 使用用户唯一标识 + 当前日期，作为存redis 时的唯一标识
+        String key = "sign-" + loginUserId + "-" + nowFormat;
+        // 4. 获取今天是本月第几天，好用来实现查询
+        int dayOfMonth = now.getDayOfMonth();
+
+        // 5.获取本月截止今天为止的所有的签到记录，返回的是一个十进制的数字 BITFIELD sign:5:202403 GET U14 0
+        List<Long> result = redisTemplate.opsForValue().bitField(
+                key,
+                BitFieldSubCommands.create()
+                        .get(BitFieldSubCommands.BitFieldType.unsigned(dayOfMonth)).valueAt(0)
+        );
+        if (result == null || result.isEmpty()){
+            return 0;
+        }
+        Long num = result.get(0);
+        if (num == 0){
+            return 0;
+        }
+        // 6. 循环遍历
+        int count = 0;
+        // 签到天数统计
+        // 任何数a 与 1 做与运输，结果都是a，所以这里用来判断当天是否签到
+        while ((num & 1) != 0) {
+            count++;
+            // 右移，表示查找前上一天
+            num >>>= 1;
+        }
+        return count;
     }
 }
 

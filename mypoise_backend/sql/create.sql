@@ -24,18 +24,21 @@ create table if not exists user
 
 -- 用户-微信表
 CREATE TABLE user_wechat (
-  id bigint AUTO_INCREMENT PRIMARY KEY COMMENT '用户微信表ID',
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '用户微信表ID',
 
-  openid VARCHAR(256) NULL COMMENT '微信扫码登录的OpenID',  -- 用于微信扫码登录
-  session_key VARCHAR(512) NULL COMMENT '微信扫码登录的SessionKey',  -- 用于微信扫码登录
+    openid VARCHAR(256) NOT NULL COMMENT '微信扫码登录的OpenID',  -- 用于微信扫码登录
+    session_key VARCHAR(512) NULL COMMENT '微信扫码登录的SessionKey',  -- 用于微信扫码登录
+    unionid VARCHAR(256) NOT NULL COMMENT '微信统一标识 UnionID',  -- 用于多个平台的统一标识（扩展性字段）
 
-  unionid VARCHAR(256) NULL COMMENT '微信统一标识 UnionID',  -- 用于多个平台的统一标识（扩展性字段）
+    mini_program_openid VARCHAR(256) NULL COMMENT '微信小程序的OpenID',  -- 用于小程序
+    mini_program_unionid VARCHAR(256) NULL COMMENT '微信小程序的UnionID',  -- 用于小程序（扩展性字段）
 
-  mini_program_openid VARCHAR(256) NULL COMMENT '微信小程序的OpenID',  -- 用于小程序
-  mini_program_unionid VARCHAR(256) NULL COMMENT '微信小程序的UnionID',  -- 用于小程序（扩展性字段）
+    mini_program_bind_time DATETIME NULL COMMENT '微信小程序绑定时间',  -- 绑定时间
 
-  mini_program_bind_time DATETIME NULL COMMENT '微信小程序绑定时间',  -- 绑定时间
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
 
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+    UNIQUE KEY uniq_openid (openid),  -- 为 openid 设置唯一索引
+    UNIQUE KEY uniq_unionid (unionid)  -- 为 unionid 设置唯一索引
 );
+
