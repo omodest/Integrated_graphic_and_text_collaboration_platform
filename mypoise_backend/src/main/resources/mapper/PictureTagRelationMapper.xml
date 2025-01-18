@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="integrated.graphic_and_text.collaboration.mypoise.mapper.PictureTagRelationMapper">
+
+    <resultMap id="BaseResultMap" type="integrated.graphic_and_text.collaboration.mypoise.entity.model.PictureTagRelation">
+            <id property="pictureId" column="pictureId" jdbcType="BIGINT"/>
+            <id property="tagId" column="tagId" jdbcType="BIGINT"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        pictureId,tagId,createTime
+    </sql>
+</mapper>

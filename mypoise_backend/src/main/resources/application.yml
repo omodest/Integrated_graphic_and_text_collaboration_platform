@@ -7,6 +7,12 @@ server:
 spring:
   application:
     name: mypoise_backend
+  servlet:
+    multipart:
+      max-file-size: 5MB
+  # 允许使用application-local.yml 配置文件
+  profiles:
+    active: local
   # 1. mysql 配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -36,7 +42,10 @@ spring:
 # 对象存储
 cos:
   client:
-
+    accessKey:
+    secretKey:
+    region:
+    bucket:
 mybatis-plus:
   # mybatis-plus 配置
   configuration:

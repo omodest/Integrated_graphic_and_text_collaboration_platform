@@ -29,19 +29,24 @@ const router = createRouter({
       },
     },
     {
-      path: '/noAuth',
-      name: 'NoAuth',
-      component: () => import('../pages/noauth/NoAuthPage.vue'),
-      meta: {
-        hideInMenu: true,
-      },
-    },
-    {
       path: '/admin/userManage',
       name: '用户管理',
       component: () => import('../pages/admin/UserManagePage.vue'),
       meta: {
         access: AccessEnum.ADMIN,
+      },
+    },
+    {
+      path: '/add_picture',
+      name: '创建图片',
+      component: () => import('../pages/picture/AddPicturePage.vue'),
+    },
+    {
+      path: '/noAuth',
+      name: 'NoAuth',
+      component: () => import('../pages/noauth/NoAuthPage.vue'),
+      meta: {
+        hideInMenu: true,
       },
     },
   ],

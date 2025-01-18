@@ -1,5 +1,6 @@
 package integrated.graphic_and_text.collaboration.mypoise.services.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import integrated.graphic_and_text.collaboration.mypoise.entity.enums.FileUploadBizEnum;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
@@ -17,6 +18,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Date;
 
 import static integrated.graphic_and_text.collaboration.mypoise.constant.FileConstant.FILE_SIZE_UPLOAD_LIMIT;
 import static integrated.graphic_and_text.collaboration.mypoise.constant.FileConstant.FILE_TYPE_UPLOAD_LIMIT;
@@ -56,7 +58,7 @@ public class FileServiceImpl implements FileService {
         User loginUser = userService.getCurrentUser(request);
         String uuid = RandomStringUtils.randomAlphanumeric(8);
         String filename = uuid + "-" + multipartFile.getOriginalFilename();
-        return String.format("/%s/%s/%s", fileUploadBizEnum.getValue(), loginUser.getId(), filename);
+        return String.format("/%s/%s/%s/%s", fileUploadBizEnum.getValue(), loginUser.getId(), DateUtil.formatDate(new Date()), filename);
     }
 
     @Override

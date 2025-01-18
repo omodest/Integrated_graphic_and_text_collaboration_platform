@@ -10,6 +10,7 @@ import integrated.graphic_and_text.collaboration.mypoise.config.EmailConfig;
 import integrated.graphic_and_text.collaboration.mypoise.constant.UserConstant;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.user.UserQueryRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.user.UserUpdateRequest;
+import integrated.graphic_and_text.collaboration.mypoise.entity.enums.UserRoleEnum;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
 import integrated.graphic_and_text.collaboration.mypoise.entity.vo.UserInfoVO;
 import integrated.graphic_and_text.collaboration.mypoise.exception.BusinessException;
@@ -398,6 +399,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             num >>>= 1;
         }
         return count;
+    }
+
+    @Override
+    public boolean isAdmin(User user) {
+        return user != null && UserRoleEnum.ADMIN.getValue().equals(user.getUserRole());
     }
 }
 

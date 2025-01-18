@@ -1,22 +1,33 @@
 package integrated.graphic_and_text.collaboration.mypoise.controller;
 
+import com.qcloud.cos.model.COSObject;
+import com.qcloud.cos.model.COSObjectInputStream;
+import com.qcloud.cos.utils.IOUtils;
+import integrated.graphic_and_text.collaboration.mypoise.annotation.AuthCheck;
 import integrated.graphic_and_text.collaboration.mypoise.common.BaseResponse;
 import integrated.graphic_and_text.collaboration.mypoise.common.ResultUtils;
 import integrated.graphic_and_text.collaboration.mypoise.constant.FileConstant;
+import integrated.graphic_and_text.collaboration.mypoise.constant.UserConstant;
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureUploadRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.file.UploadFileRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.enums.FileUploadBizEnum;
+import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
+import integrated.graphic_and_text.collaboration.mypoise.entity.vo.PictureVO;
 import integrated.graphic_and_text.collaboration.mypoise.exception.BusinessException;
 import integrated.graphic_and_text.collaboration.mypoise.exception.ErrorCode;
+import integrated.graphic_and_text.collaboration.mypoise.manage.CosManager;
 import integrated.graphic_and_text.collaboration.mypoise.services.FileService;
+import integrated.graphic_and_text.collaboration.mypoise.services.PictureService;
+import integrated.graphic_and_text.collaboration.mypoise.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/file")
@@ -32,6 +43,15 @@ import javax.servlet.http.HttpServletRequest;
 // endregion
 public class FileController {
 
+    @Resource
+    private CosManager cosManager;
+
+    @Resource
+    private UserService userService;
+
+    @Resource
+    private PictureService pictureService;
+
     private final FileService fileService;
 
     @Autowired // 从 Spring 4.3 开始，如果一个类只有一个构造函数，Spring 会自动使用该构造函数进行依赖注入，因此可以省略 @Autowired 注解。
@@ -41,7 +61,7 @@ public class FileController {
 
 
     /**
-     * 文件上传
+     * 头像上传
      *
      * @param multipartFile 上传的文件
      * @param uploadFileRequest 上传文件类型
@@ -69,4 +89,55 @@ public class FileController {
         // 返回可访问地址
         return ResultUtils.success(FileConstant.COS_HOST + filepath);
     }
+
+
+    /**
+     * 测试文件下载
+     *
+     * @param filepath 文件路径
+     * @param response 响应对象
+     */
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @GetMapping("/test/download/")
+    public void testDownloadFile(String filepath, HttpServletResponse response) throws IOException {
+        COSObjectInputStream cosObjectInput = null;
+        try {
+            COSObject cosObject = cosManager.getObject(filepath);
+            cosObjectInput = cosObject.getObjectContent();
+            // 处理下载到的流
+            byte[] bytes = IOUtils.toByteArray(cosObjectInput);
+            // 设置响应头
+            response.setContentType("application/octet-stream;charset=UTF-8");
+            response.setHeader("Content-Disposition", "attachment; filename=" + filepath);
+            // 写入响应
+            response.getOutputStream().write(bytes);
+            response.getOutputStream().flush();
+        } catch (Exception e) {
+            log.error("file download error, filepath = " + filepath, e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "下载失败");
+        } finally {
+            if (cosObjectInput != null) {
+                cosObjectInput.close();
+            }
+        }
+    }
+
+    /**
+     * 平台核心功能- 图片上传
+     * @param multipartFile 文件
+     * @param pictureUploadRequest 图片上传请求
+     * @param httpServletRequest http上下文
+     * @return
+     */
+    @PostMapping("/upload/picture")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<PictureVO> uploadPicture(@RequestPart("file") MultipartFile multipartFile,
+                                                 PictureUploadRequest pictureUploadRequest,
+                                                 HttpServletRequest httpServletRequest){
+        User currentUser = userService.getCurrentUser(httpServletRequest);
+        // 文件上传
+        PictureVO pictureVO = pictureService.uploadPicture(multipartFile, pictureUploadRequest, currentUser);
+        return ResultUtils.success(pictureVO);
+    }
+
 }

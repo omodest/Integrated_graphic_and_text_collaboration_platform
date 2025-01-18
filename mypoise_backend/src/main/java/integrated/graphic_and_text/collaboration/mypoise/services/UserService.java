@@ -146,4 +146,11 @@ public interface UserService extends IService<User> {
      */
     Integer getConstantSignDay(HttpServletRequest httpServletRequest);
 
+    /**
+     *
+     * @param user
+     * @return
+     */
+    boolean isAdmin(User user);
+
 }

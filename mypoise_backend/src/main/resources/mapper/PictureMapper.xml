@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="integrated.graphic_and_text.collaboration.mypoise.mapper.PictureMapper">
+
+    <resultMap id="BaseResultMap" type="integrated.graphic_and_text.collaboration.mypoise.entity.model.Picture">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="url" column="url" jdbcType="VARCHAR"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="introduction" column="introduction" jdbcType="VARCHAR"/>
+            <result property="categoryId" column="categoryId" jdbcType="BIGINT"/>
+            <result property="picSize" column="picSize" jdbcType="BIGINT"/>
+            <result property="picWidth" column="picWidth" jdbcType="INTEGER"/>
+            <result property="picHeight" column="picHeight" jdbcType="INTEGER"/>
+            <result property="picScale" column="picScale" jdbcType="DOUBLE"/>
+            <result property="picFormat" column="picFormat" jdbcType="VARCHAR"/>
+            <result property="userId" column="userId" jdbcType="BIGINT"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="editTime" column="editTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,url,name,
+        introduction,categoryId,picSize,
+        picWidth,picHeight,picScale,
+        picFormat,userId,createTime,
+        editTime,updateTime,isDelete
+    </sql>
+</mapper>
