@@ -51,7 +51,7 @@ public class PictureTagsRelationController {
      */
     @Transactional(rollbackFor = Exception.class)
     @PostMapping("/del")
-    public BaseResponse<Boolean> delTags(long tagId, HttpServletRequest httpServletRequest){
+    public BaseResponse<Boolean> delTags(@RequestBody long tagId, HttpServletRequest httpServletRequest){
         // 1. 参数校验
         ThrowUtils.throwIf(tagId <= 0, ErrorCode.PARAMS_ERROR);
         // 2. 找到要删除的标签
@@ -67,8 +67,8 @@ public class PictureTagsRelationController {
         // 5. 删除图片标签表记录
         QueryWrapper<PictureTagRelation> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tagId",tagId);
-        boolean remove = pictureTagRelationService.remove(queryWrapper);
-        ThrowUtils.throwIf(!b || !remove, ErrorCode.SYSTEM_ERROR);
+//        boolean remove = pictureTagRelationService.remove(queryWrapper);
+//        ThrowUtils.throwIf(!b || !remove, ErrorCode.SYSTEM_ERROR);
         return ResultUtils.success(true);
     }
 
@@ -89,18 +89,12 @@ public class PictureTagsRelationController {
      * 缓存
      * @return
      */
-    @SuppressWarnings("unchecked")
     @GetMapping("/hot")
     public BaseResponse<List<PictureTags>> getHotTags() {
-        // 从 Redis 中获取热门标签
-        List<PictureTags> hotTags = (List<PictureTags>) redisTemplate.opsForValue().get("hot_tags");
-        if (hotTags == null) {
-            hotTags = pictureTagsService.query()
-                    .orderByDesc("applyTotal")
-                    .last("LIMIT 10")
-                    .list();
-            redisTemplate.opsForValue().set("hot_tags", hotTags, 3600);
-        }
-        return ResultUtils.success(hotTags);
+        List<PictureTags> list = pictureTagsService.query()
+                .orderByDesc("applyTotal")
+                .last("LIMIT 3")
+                .list();
+        return ResultUtils.success(list);
     }
 }

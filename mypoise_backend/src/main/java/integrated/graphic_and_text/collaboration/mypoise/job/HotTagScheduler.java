@@ -12,7 +12,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Slf4j
-@Component
+//@Component
 public class HotTagScheduler {
 
     @Resource
@@ -21,12 +21,12 @@ public class HotTagScheduler {
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
-    @Scheduled(cron = "0 0 * * * ?") // 每小时执行一次
+    @Scheduled(cron = "0/5 * * * * ?")
     public void refreshHotTags() {
         // 1. 查询热门标签
         List<PictureTags> topTags = pictureTagsService.query()
                 .orderByDesc("applyTotal")
-                .last("LIMIT 5")
+                .last("LIMIT 3")
                 .list();
         log.info("添加热门标签到redis");
         // 2. 更新到缓存

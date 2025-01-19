@@ -1,5 +1,6 @@
 package integrated.graphic_and_text.collaboration.mypoise.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import integrated.graphic_and_text.collaboration.mypoise.annotation.AuthCheck;
@@ -206,7 +207,7 @@ public class PictureController {
 
             QueryWrapper<PictureCategory> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("id",picture.getCategoryId());
-            picture.setCategoryName(pictureCategoryService.getOne(queryWrapper).getCategoryName());
+            picture.setCategory(pictureCategoryService.getOne(queryWrapper).getCategoryName());
         }
         return ResultUtils.success(picturePage);
     }
@@ -228,9 +229,18 @@ public class PictureController {
         for (Picture picture : picturePage.getRecords()) {
             List<String> listTagNameWithPicId = pictureTagRelationService.getListTagNameWithPicId(picture.getId());
             picture.setTagNames(listTagNameWithPicId);
+
+            QueryWrapper<PictureCategory> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("id",picture.getCategoryId());
+            picture.setCategory(pictureCategoryService.getOne(queryWrapper).getCategoryName());
+        }
+
+        Page<PictureVO> pagePictureVo = null;
+        if (ObjectUtil.isNotEmpty(picturePage.getRecords())){
+            pagePictureVo  = pictureService.getPagePictureVo(picturePage);
         }
         // 获取封装类
-        return ResultUtils.success(pictureService.getPagePictureVo(picturePage));
+        return ResultUtils.success(pagePictureVo);
     }
 
 }

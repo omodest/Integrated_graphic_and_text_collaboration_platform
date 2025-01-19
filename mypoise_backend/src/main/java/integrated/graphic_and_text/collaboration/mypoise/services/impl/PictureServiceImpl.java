@@ -193,12 +193,12 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         String name = pictureQueryRequest.getName();
         String introduction = pictureQueryRequest.getIntroduction();
 
-        String categoryName = pictureQueryRequest.getCategoryName();
+        String categoryName = pictureQueryRequest.getCategory();
         QueryWrapper<PictureCategory> queryWrapper1 = new QueryWrapper<>();
         long categoryId = 0;
         if (StrUtil.isNotBlank(categoryName)){
             categoryId = -1;
-            queryWrapper1.eq("categoryName", categoryName);
+            queryWrapper1.eq("id", categoryName);
             PictureCategory pictureCategory = pictureCategoryService.getOne(queryWrapper1);
             if (pictureCategory != null){
                 categoryId = pictureCategory.getId();

@@ -1,9 +1,4 @@
 declare namespace API {
-  type addCategoryUsingPOSTParams = {
-    /** categoryName */
-    categoryName?: string
-  }
-
   type BaseResponseBoolean_ = {
     code?: number
     data?: boolean
@@ -82,9 +77,9 @@ declare namespace API {
     message?: string
   }
 
-  type delCategoryUsingPOSTParams = {
-    /** categoryId */
+  type CategoryEditRequest = {
     categoryId?: number
+    categoryName?: string
   }
 
   type DeleteRequest = {
@@ -94,18 +89,6 @@ declare namespace API {
   type deleteUserUsingPOSTParams = {
     /** id */
     id?: number
-  }
-
-  type delTagsUsingPOSTParams = {
-    /** tagId */
-    tagId?: number
-  }
-
-  type editCategoryUsingPOSTParams = {
-    /** categoryId */
-    categoryId?: number
-    /** categoryName */
-    categoryName?: string
   }
 
   type getCaptchaUsingGETParams = {
@@ -160,6 +143,7 @@ declare namespace API {
   }
 
   type Picture = {
+    category?: string
     categoryId?: number
     createTime?: string
     editTime?: string
@@ -188,7 +172,7 @@ declare namespace API {
   }
 
   type PictureEditRequest = {
-    category?: number
+    category?: string
     id?: number
     introduction?: string
     name?: string
@@ -233,6 +217,7 @@ declare namespace API {
   }
 
   type PictureVO = {
+    category?: string
     categoryId?: string
     createTime?: string
     editTime?: string

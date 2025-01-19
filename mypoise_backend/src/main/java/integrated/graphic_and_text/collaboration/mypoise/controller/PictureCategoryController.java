@@ -9,6 +9,7 @@ import integrated.graphic_and_text.collaboration.mypoise.common.BaseResponse;
 import integrated.graphic_and_text.collaboration.mypoise.common.DeleteRequest;
 import integrated.graphic_and_text.collaboration.mypoise.common.ResultUtils;
 import integrated.graphic_and_text.collaboration.mypoise.constant.UserConstant;
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.categoryTag.CategoryEditRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureEditRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureQueryRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureUpdateRequest;
@@ -50,7 +51,7 @@ public class PictureCategoryController {
      */
     @PostMapping("/add")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> addCategory(String categoryName){
+    public BaseResponse<Boolean> addCategory(@RequestBody String categoryName){
         ThrowUtils.throwIf(StrUtil.isEmpty(categoryName), ErrorCode.PARAMS_ERROR, "分类为空");
         PictureCategory pictureCategory = new PictureCategory();
         pictureCategory.setCategoryName(categoryName);
@@ -66,9 +67,9 @@ public class PictureCategoryController {
      */
     @PostMapping("/del")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> delCategory(long categoryId){
+    public BaseResponse<Boolean> delCategory(@RequestBody long categoryId){
         // 1. 参数校验
-        ThrowUtils.throwIf(categoryId <= 1, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(categoryId <= 1, ErrorCode.PARAMS_ERROR, "该标签不允许删除");
         // 2. 将当前分类的图片，都改为默认分类
         QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("categoryId",categoryId);
@@ -87,11 +88,11 @@ public class PictureCategoryController {
      */
     @PostMapping("/edit")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> editCategory(long categoryId, String categoryName){
-        ThrowUtils.throwIf(StrUtil.isEmpty(categoryName), ErrorCode.PARAMS_ERROR, "分类为空");
-        PictureCategory pictureCategory = pictureCategoryService.getById(categoryId);
+    public BaseResponse<Boolean> editCategory(@RequestBody CategoryEditRequest categoryEditRequest){
+        ThrowUtils.throwIf(StrUtil.isEmpty(categoryEditRequest.getCategoryName()), ErrorCode.PARAMS_ERROR, "分类为空");
+        PictureCategory pictureCategory = pictureCategoryService.getById(categoryEditRequest.getCategoryId());
         ThrowUtils.throwIf(ObjectUtil.isEmpty(pictureCategory), ErrorCode.PARAMS_ERROR, "数据不存在");
-        pictureCategory.setCategoryName(categoryName);
+        pictureCategory.setCategoryName(categoryEditRequest.getCategoryName());
         return ResultUtils.success(pictureCategoryService.updateById(pictureCategory));
     }
 

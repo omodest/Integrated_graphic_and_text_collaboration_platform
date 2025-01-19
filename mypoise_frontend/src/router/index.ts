@@ -22,7 +22,20 @@ const router = createRouter({
     },
     {
       path: '/',
+      name: '主页',
       component: () => import('../pages/HomePage.vue'),
+      meta: {
+        hideInMenu: true,
+      },
+    },
+    {
+      path: '/picture/:id',
+      name: '图片详情',
+      component: () => import('../pages/picture/PictureDetailPage.vue'),
+      props: true,
+      meta: {
+        hideInMenu: true,
+      },
     },
     {
       path: '/user/center',
@@ -44,6 +57,25 @@ const router = createRouter({
       path: '/admin/pictureManage',
       name: '图片管理',
       component: () => import('../pages/admin/PictureManagePage.vue'),
+      meta: {
+        access: AccessEnum.ADMIN,
+      },
+    },
+    {
+      path: '/admin/tags',
+      name: '标签管理',
+      component: () => import('../pages/admin/TagManagePage.vue'),
+      meta: {
+        access: AccessEnum.ADMIN,
+      },
+    },
+    {
+      path: '/admin/category',
+      name: '分类管理',
+      component: () => import('../pages/admin/CategoryManagePage.vue'),
+      meta: {
+        access: AccessEnum.ADMIN,
+      },
     },
     {
       path: '/add_picture',

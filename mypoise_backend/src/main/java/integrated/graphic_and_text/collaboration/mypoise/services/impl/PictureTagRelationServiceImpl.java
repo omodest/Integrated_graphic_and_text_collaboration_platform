@@ -86,15 +86,19 @@ public class PictureTagRelationServiceImpl extends ServiceImpl<PictureTagRelatio
             }
         }
 
-        // 5. 如果传过来的参数中标签减少了，删除标签关联表数据
+        // 5. 如果传过来的参数中标签减少了，且图片关联表没有这些标签，删除标签关联表数据
+
+        // 拿到这张图片 增加/修改后 的所有标签id
         QueryWrapper<PictureTagRelation> deleteOldTags = new QueryWrapper<>();
         deleteOldTags.eq("pictureId",pictureId);
-        List<PictureTagRelation> list = this.list();
-        // 添加之后的标签id集合
+        List<PictureTagRelation> list = this.list(deleteOldTags);
         List<Long> collect = list.stream().map(PictureTagRelation::getTagId).collect(Collectors.toList());
+        // 拿到图片关联表所有id
+        List<Long> collect1 = this.list().stream().map(PictureTagRelation::getTagId).collect(Collectors.toList());
+
         for (long id: collect){
-            String tagNameById = pictureTagsService.getById(id).getTagName();
-            if (!tagNames.contains(tagNameById)){
+            // 如果
+            if (!collect1.contains(id)){
                 QueryWrapper<PictureTagRelation> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("tagId",id);
                 this.remove(queryWrapper);
