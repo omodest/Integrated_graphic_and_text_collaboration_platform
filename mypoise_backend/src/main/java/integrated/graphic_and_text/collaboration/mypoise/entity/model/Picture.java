@@ -46,6 +46,8 @@ public class Picture implements Serializable {
      */
     @TableField(exist = false)
     private List<String> tagNames;
+    @TableField(exist = false)
+    private String categoryName;
 
     /**
      * 图片体积

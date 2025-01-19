@@ -1,5 +1,6 @@
 package integrated.graphic_and_text.collaboration.mypoise.services.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
@@ -15,8 +16,7 @@ import com.qcloud.cos.model.ciModel.persistence.ImageInfo;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureQueryRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureUploadRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.file.UploadPictureResult;
-import integrated.graphic_and_text.collaboration.mypoise.entity.model.Picture;
-import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
+import integrated.graphic_and_text.collaboration.mypoise.entity.model.*;
 import integrated.graphic_and_text.collaboration.mypoise.entity.vo.PictureVO;
 import integrated.graphic_and_text.collaboration.mypoise.entity.vo.UserInfoVO;
 import integrated.graphic_and_text.collaboration.mypoise.exception.BusinessException;
@@ -24,8 +24,7 @@ import integrated.graphic_and_text.collaboration.mypoise.exception.ErrorCode;
 import integrated.graphic_and_text.collaboration.mypoise.exception.ThrowUtils;
 import integrated.graphic_and_text.collaboration.mypoise.manage.CosManager;
 import integrated.graphic_and_text.collaboration.mypoise.mapper.PictureMapper;
-import integrated.graphic_and_text.collaboration.mypoise.services.PictureService;
-import integrated.graphic_and_text.collaboration.mypoise.services.UserService;
+import integrated.graphic_and_text.collaboration.mypoise.services.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -60,6 +59,14 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     @Resource
     private UserService userService;
 
+    @Resource
+    private PictureCategoryService pictureCategoryService;
+
+    @Resource
+    private PictureTagsService pictureTagsService;
+
+    @Resource
+    private PictureTagRelationService pictureTagRelationService;
     @Override
     public UploadPictureResult uploadPicture(MultipartFile multipartFile, String uploadPathPrefix) {
         // 1. 图片校验
@@ -185,7 +192,20 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         Long id = pictureQueryRequest.getId();
         String name = pictureQueryRequest.getName();
         String introduction = pictureQueryRequest.getIntroduction();
-        String categoryId = pictureQueryRequest.getCategory();
+
+        String categoryName = pictureQueryRequest.getCategoryName();
+        QueryWrapper<PictureCategory> queryWrapper1 = new QueryWrapper<>();
+        long categoryId = 0;
+        if (StrUtil.isNotBlank(categoryName)){
+            categoryId = -1;
+            queryWrapper1.eq("categoryName", categoryName);
+            PictureCategory pictureCategory = pictureCategoryService.getOne(queryWrapper1);
+            if (pictureCategory != null){
+                categoryId = pictureCategory.getId();
+            }
+        }
+
+        List<String> tags = pictureQueryRequest.getTags();
         Long picSize = pictureQueryRequest.getPicSize();
         Integer picWidth = pictureQueryRequest.getPicWidth();
         Integer picHeight = pictureQueryRequest.getPicHeight();
@@ -199,18 +219,59 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         if (StringUtils.isNotEmpty(searchText)){
             queryWrapper.and(qw -> qw.like("name", searchText)
                     .or()
-                    .like("introduction", introduction));
+                    .like("introduction", searchText));
         }
         queryWrapper.eq(ObjUtil.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjUtil.isNotEmpty(userId), "userId", userId);
         queryWrapper.like(StrUtil.isNotBlank(name), "name", name);
         queryWrapper.like(StrUtil.isNotBlank(introduction), "introduction", introduction);
         queryWrapper.like(StrUtil.isNotBlank(picFormat), "picFormat", picFormat);
-        queryWrapper.eq(StrUtil.isNotBlank(categoryId), "categoryId", categoryId);
+        queryWrapper.eq( categoryId > 0 || categoryId == -1, "categoryId", categoryId);
         queryWrapper.eq(ObjUtil.isNotEmpty(picWidth), "picWidth", picWidth);
         queryWrapper.eq(ObjUtil.isNotEmpty(picHeight), "picHeight", picHeight);
         queryWrapper.eq(ObjUtil.isNotEmpty(picSize), "picSize", picSize);
         queryWrapper.eq(ObjUtil.isNotEmpty(picScale), "picScale", picScale);
+        boolean flag = false;
+        // 拿到所有标签id； 输入了标签就说明需要将标签作为查询条件；
+        QueryWrapper<PictureTags> queryWrapper2 = new QueryWrapper<>();
+        if (ObjUtil.isNotEmpty(tags)){
+            for (String tagName: tags){
+                flag = true;
+                queryWrapper2.eq("tagName", tagName);
+            }
+        }
+        List<Long> collect = pictureTagsService.list(queryWrapper2).stream().
+                map(PictureTags::getId).collect(Collectors.toList());
+
+        // 如果修改了flag状态，才执行这些逻辑
+        if (flag){
+            // 查询所有需要查出来的记录；有标签id，去图片关联表查询
+            boolean flag1 = false;
+            QueryWrapper<PictureTagRelation> queryWrapper3 = new QueryWrapper<>();
+            if (CollUtil.isNotEmpty(collect)) {
+                for (long col : collect) {
+                    flag1 = true;
+                    queryWrapper3.eq("tagId",col);
+                }
+            }else {
+                // 有标签 但图片标签表没有标签id,表示需要直接返回空；直接将-1作为查询条件；
+                queryWrapper.eq("id",-1);
+            }
+            // 输入了标签，且这个标签在图片标签管理表中存在
+            if (flag1){
+                List<PictureTagRelation> list = pictureTagRelationService.list(queryWrapper3);
+                // 有标签有标签id 查询; 没查到表示需要返回空，以-1作为查询条件；否则作为查询条件
+                if (ObjUtil.isEmpty(list)){
+                    // 有标签 但图片标签表没有标签id,表示需要直接返回空；直接将-1作为查询条件；
+                    queryWrapper.eq("id",-1);
+                }
+                // 表示输入了标签，这些标签都有标签ID，需要将这些标签作为查询条件
+                List<Long> col1 = list.stream().map(PictureTagRelation::getPictureId).collect(Collectors.toList());
+                if (ObjUtil.isEmpty(col1)) {
+                    queryWrapper3.in("pictureId", col1); // 添加多个 pictureId 条件
+                }
+            }
+        }
 
         // 排序
         queryWrapper.orderBy(StrUtil.isNotEmpty(sortFiled), sortOrder.equals("ascend"), sortFiled);

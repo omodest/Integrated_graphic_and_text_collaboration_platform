@@ -1,13 +1,16 @@
 package integrated.graphic_and_text.collaboration.mypoise.services.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.Query;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import integrated.graphic_and_text.collaboration.mypoise.constant.UserConstant;
+import integrated.graphic_and_text.collaboration.mypoise.entity.model.PictureCategory;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.PictureTagRelation;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.PictureTags;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
 import integrated.graphic_and_text.collaboration.mypoise.exception.BusinessException;
 import integrated.graphic_and_text.collaboration.mypoise.exception.ErrorCode;
+import integrated.graphic_and_text.collaboration.mypoise.exception.ThrowUtils;
 import integrated.graphic_and_text.collaboration.mypoise.services.PictureTagRelationService;
 import integrated.graphic_and_text.collaboration.mypoise.mapper.PictureTagRelationMapper;
 import integrated.graphic_and_text.collaboration.mypoise.services.PictureTagsService;
@@ -54,9 +57,9 @@ public class PictureTagRelationServiceImpl extends ServiceImpl<PictureTagRelatio
         if (hasDifference){
             currentUser = userService.getCurrentUser(httpServletRequest);
             userId = currentUser.getId();
-            if (currentUser.getUserRole().equals(UserConstant.USER_ROLE) && !userService.isAdmin(currentUser)){
-                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "普通用户不允许自定义标签");
-            }
+//            if (currentUser.getUserRole().equals(UserConstant.USER_ROLE) && !userService.isAdmin(currentUser)){
+//                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "普通用户不允许自定义标签");
+//            }
         }
 
         // 4. 添加数据库记录
@@ -71,10 +74,31 @@ public class PictureTagRelationServiceImpl extends ServiceImpl<PictureTagRelatio
             queryWrapper.eq("tagName", tagName);
             PictureTags pictureTags = pictureTagsService.getOne(queryWrapper);
             // 添加图片标签关联记录
-            PictureTagRelation pictureTagRelation = new PictureTagRelation();
-            pictureTagRelation.setPictureId(pictureId);
-            pictureTagRelation.setTagId(pictureTags.getId());
-            this.save(pictureTagRelation);
+            QueryWrapper<PictureTagRelation> pictureTagRelationQueryWrapper = new QueryWrapper<>();
+            pictureTagRelationQueryWrapper.eq("pictureId",pictureId);
+            pictureTagRelationQueryWrapper.eq("tagId",pictureTags.getId());
+            List<PictureTagRelation> list = this.list(pictureTagRelationQueryWrapper);
+            if (list.isEmpty()){
+                PictureTagRelation pictureTagRelation = new PictureTagRelation();
+                pictureTagRelation.setPictureId(pictureId);
+                pictureTagRelation.setTagId(pictureTags.getId());
+                this.save(pictureTagRelation);
+            }
+        }
+
+        // 5. 如果传过来的参数中标签减少了，删除标签关联表数据
+        QueryWrapper<PictureTagRelation> deleteOldTags = new QueryWrapper<>();
+        deleteOldTags.eq("pictureId",pictureId);
+        List<PictureTagRelation> list = this.list();
+        // 添加之后的标签id集合
+        List<Long> collect = list.stream().map(PictureTagRelation::getTagId).collect(Collectors.toList());
+        for (long id: collect){
+            String tagNameById = pictureTagsService.getById(id).getTagName();
+            if (!tagNames.contains(tagNameById)){
+                QueryWrapper<PictureTagRelation> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("tagId",id);
+                this.remove(queryWrapper);
+            }
         }
     }
 
@@ -84,6 +108,7 @@ public class PictureTagRelationServiceImpl extends ServiceImpl<PictureTagRelatio
         QueryWrapper<PictureTagRelation> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("pictureId", PictureId);
         List<PictureTagRelation> pictureTagRelationList = this.list(queryWrapper);
+        ThrowUtils.throwIf(pictureTagRelationList.isEmpty(),ErrorCode.SYSTEM_ERROR, "数据不一致");
         // 2. 拿到所有关联记录的 tagId
         List<Long> tagIds = pictureTagRelationList.stream().map(PictureTagRelation::getTagId).collect(Collectors.toList());
         // 3. tagId转tagName

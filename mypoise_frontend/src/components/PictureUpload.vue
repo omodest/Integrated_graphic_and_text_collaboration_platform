@@ -53,7 +53,7 @@ const beforeUpload = (file: UploadProps['fileList'][number]) => {
 }
 
 /**
- * 2. 上传文件
+ * 2. 上传
  * @param file
  */
 const handleUpload = async ({ file }: any) => {

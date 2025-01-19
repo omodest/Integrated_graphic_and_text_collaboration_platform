@@ -21,6 +21,10 @@ const router = createRouter({
       },
     },
     {
+      path: '/',
+      component: () => import('../pages/HomePage.vue'),
+    },
+    {
       path: '/user/center',
       name: '个人中心',
       component: () => import('../pages/user/UserEditMyPage.vue'),
@@ -35,6 +39,11 @@ const router = createRouter({
       meta: {
         access: AccessEnum.ADMIN,
       },
+    },
+    {
+      path: '/admin/pictureManage',
+      name: '图片管理',
+      component: () => import('../pages/admin/PictureManagePage.vue'),
     },
     {
       path: '/add_picture',

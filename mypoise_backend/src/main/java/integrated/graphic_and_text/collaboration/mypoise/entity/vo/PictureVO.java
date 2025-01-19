@@ -38,7 +38,7 @@ public class PictureVO implements Serializable {
     /**
      * 分类
      */
-    private String categoryId;
+    private String category;
 
     /**
      * 标签

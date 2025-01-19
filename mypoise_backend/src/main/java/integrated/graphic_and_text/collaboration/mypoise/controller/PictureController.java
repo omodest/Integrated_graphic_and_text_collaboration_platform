@@ -179,7 +179,11 @@ public class PictureController {
         boolean b = pictureService.updateById(picture);
         ThrowUtils.throwIf(!b, ErrorCode.SYSTEM_ERROR, "获取图片标签过程出错");
         // 获取封装类
-        return ResultUtils.success(pictureService.getPictureVo(picture));
+        PictureVO pictureVo = pictureService.getPictureVo(picture);
+        QueryWrapper<PictureCategory> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id",picture.getCategoryId());
+        pictureVo.setCategory(pictureCategoryService.getOne(queryWrapper).getCategoryName());
+        return ResultUtils.success(pictureVo);
     }
 
     /**
@@ -193,12 +197,16 @@ public class PictureController {
         // 查询数据库
         Page<Picture> picturePage = pictureService.page(new Page<>(current, size),
                 pictureService.getQueryWrapper(pictureQueryRequest));
-
         // 设置标签
+
         // 为每个图片对象添加标签
         for (Picture picture : picturePage.getRecords()) {
             List<String> listTagNameWithPicId = pictureTagRelationService.getListTagNameWithPicId(picture.getId());
             picture.setTagNames(listTagNameWithPicId);
+
+            QueryWrapper<PictureCategory> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("id",picture.getCategoryId());
+            picture.setCategoryName(pictureCategoryService.getOne(queryWrapper).getCategoryName());
         }
         return ResultUtils.success(picturePage);
     }

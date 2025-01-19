@@ -1,6 +1,8 @@
 <template>
   <div id="addPicturePage">
-    <h2 style="margin-bottom: 16px">创建图片</h2>
+    <h2 style="margin-bottom: 16px">
+      {{ route.query?.id ? '修改图片' : '创建图片' }}
+    </h2>
     <!-- 图片上传组件   -->
     <PictureUpload :picture="picture" :onSuccess="onSuccess" />
     <!-- 输入表单   -->
@@ -47,13 +49,14 @@
 <script setup lang="ts">
 import PictureUpload from "@/components/PictureUpload.vue";
 import {onMounted, reactive, ref} from "vue";
-import {editPictureUsingPost} from "@/api/pictureController";
+import {editPictureUsingPost, getPictureVoByIdUsingGet} from "@/api/pictureController";
 import {message} from "ant-design-vue";
-import {useRouter} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import {queryCategoryUsingPost} from "@/api/pictureCategoryController";
 import {queryTagsUsingPost} from "@/api/pictureTagsRelationController";
 
-const router = useRouter()
+const route = useRoute() // 用来获取路径
+const router = useRouter() // 用来实现页面跳转
 // 上传的图片
 const picture = ref<API.PictureVO>()
 // 图片编辑表单
@@ -127,8 +130,33 @@ const getTagCategoryOptions = async () => {
  */
 onMounted(() => {
   getTagCategoryOptions()
+  getOldPicture() // 判断是否是编辑
 })
 
+/**
+ * 5. 获取老数据
+*/
+const getOldPicture = async () => {
+  // 获取数据
+  const id = route.query?.id
+
+  if (id) {
+    // 如果id不为空，获取老数据
+    const res = await getPictureVoByIdUsingGet({
+      id: id,
+    } as API.getPictureVOByIdUsingGETParams)
+    console.log(res)
+    if (res.data.code === 0 && res.data.data) {
+      const data = res.data.data
+      console.log(data)
+      picture.value = data
+      pictureForm.name = data.name
+      pictureForm.introduction = data.introduction
+      pictureForm.category = data.category
+      pictureForm.tags = data.tagNames
+    }
+  }
+}
 
 </script>
 
