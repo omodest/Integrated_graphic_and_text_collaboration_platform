@@ -155,10 +155,26 @@ CREATE TRIGGER update_applyTotal_after_delete_category
     AFTER INSERT ON picture
     FOR EACH ROW
 BEGIN
-    -- 增加相应标签的 applyTotal
+    -- 增加相应标签的 applyTotaloj_system·
     UPDATE picture_category
     SET applyTotal = applyTotal - 1
     WHERE id = NEW.categoryId;
 END $$
 
--- 审核表
+-- 审核字段
+ALTER TABLE picture
+    -- 添加新列
+    ADD COLUMN reviewStatus INT DEFAULT 0 NOT NULL COMMENT '审核状态：0-待审核; 1-通过; 2-拒绝',
+    ADD COLUMN reviewMessage VARCHAR(512) NULL COMMENT '审核信息',
+    ADD COLUMN reviewerId BIGINT NULL COMMENT '审核人 ID',
+    ADD COLUMN reviewTime DATETIME NULL COMMENT '审核时间';
+
+-- 创建基于 reviewStatus 列的索引
+CREATE INDEX idx_reviewStatus ON picture (reviewStatus);
+
+-- 图片表添加缩略图
+ALTER TABLE picture
+    -- 添加新列
+    ADD COLUMN thumbnailUrl varchar(512) NULL COMMENT '缩略图 url';
+
+

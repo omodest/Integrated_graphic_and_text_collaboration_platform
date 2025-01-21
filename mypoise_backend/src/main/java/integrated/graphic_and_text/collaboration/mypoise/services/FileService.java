@@ -1,6 +1,8 @@
 package integrated.graphic_and_text.collaboration.mypoise.services;
 
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.file.UploadPictureByBatchRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.enums.FileUploadBizEnum;
+import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,4 +32,17 @@ public interface FileService {
      * @param multipartFile 上传的文件
      */
     void uploadFile(String filepath, MultipartFile multipartFile);
+
+    /**
+     * 批量抓取和创建图片
+     *
+     * @param uploadPictureByBatchRequest
+     * @param loginUser
+     * @return 成功创建的图片数
+     */
+    Integer uploadPictureByBatch(
+            UploadPictureByBatchRequest uploadPictureByBatchRequest,
+            User loginUser
+    );
+
 }

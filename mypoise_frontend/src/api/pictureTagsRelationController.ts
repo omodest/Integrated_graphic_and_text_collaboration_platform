@@ -24,7 +24,7 @@ export async function queryTagsUsingPost(options?: { [key: string]: any }) {
 
 /** getHotTags GET /api/picture/tags/hot */
 export async function getHotTagsUsingGet(options?: { [key: string]: any }) {
-  return request<API.BaseResponseListPictureTags_>('/api/picture/tags/hot', {
+  return request<API.BaseResponseString_>('/api/picture/tags/hot', {
     method: 'GET',
     ...(options || {}),
   })

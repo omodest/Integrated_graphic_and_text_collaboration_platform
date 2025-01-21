@@ -2,21 +2,33 @@ package integrated.graphic_and_text.collaboration.mypoise.services.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.file.UploadPictureByBatchRequest;
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureUploadRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.enums.FileUploadBizEnum;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
+import integrated.graphic_and_text.collaboration.mypoise.entity.vo.PictureVO;
 import integrated.graphic_and_text.collaboration.mypoise.exception.BusinessException;
 import integrated.graphic_and_text.collaboration.mypoise.exception.ErrorCode;
+import integrated.graphic_and_text.collaboration.mypoise.exception.ThrowUtils;
 import integrated.graphic_and_text.collaboration.mypoise.manage.CosManager;
 import integrated.graphic_and_text.collaboration.mypoise.services.FileService;
+import integrated.graphic_and_text.collaboration.mypoise.services.PictureService;
 import integrated.graphic_and_text.collaboration.mypoise.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -35,6 +47,9 @@ public class FileServiceImpl implements FileService {
 
     @Resource
     private CosManager cosManager;
+
+    @Resource
+    private PictureService pictureService;
 
     @Override
     public void validFile(MultipartFile multipartFile, FileUploadBizEnum fileUploadBizEnum) {
@@ -83,5 +98,69 @@ public class FileServiceImpl implements FileService {
                 }
             }
         }
+    }
+
+    @Override
+    public Integer uploadPictureByBatch(UploadPictureByBatchRequest uploadPictureByBatchRequest, User loginUser) {
+        // 1. 参数处理
+        Integer count = uploadPictureByBatchRequest.getCount();
+        String searchText = uploadPictureByBatchRequest.getSearchText();
+        ThrowUtils.throwIf(count > 30 || StrUtil.isEmpty(searchText), ErrorCode.PARAMS_ERROR);
+        String namePrefix = uploadPictureByBatchRequest.getNamePrefix();
+        if (StrUtil.isBlank(namePrefix)) {
+            namePrefix = searchText;
+        }
+
+        // 2. 抓取前的配置
+        String fetchUrl = String.format("https://cn.bing.com/images/async?q=%s&mmasync=1", searchText);
+        Document document;
+        try {
+            // 3. 用dom对象拿到整个页面
+            document = Jsoup.connect(fetchUrl).get();
+        } catch (IOException e) {
+            log.error("获取页面失败", e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "获取页面失败");
+        }
+        // 4. 拿到bing中唯一的的dgControl控制器
+        Element div = document.getElementsByClass("dgControl").first();
+        if (ObjUtil.isNull(div)) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "获取元素失败");
+        }
+        // 5. 从控制器中拿到img.mimg选择器
+        Elements imgElementList = div.select("img.mimg");
+        int uploadCount = 0;
+        // 6. 遍历所有的img选择器
+        for (Element imgElement : imgElementList) {
+            // 7. 拿到src后的图片路径
+            String fileUrl = imgElement.attr("src");
+            if (StrUtil.isBlank(fileUrl)) {
+                log.info("当前链接为空，已跳过: {}", fileUrl);
+                continue;
+            }
+            // 8. 处理图片上传地址，防止出现转义问题
+            int questionMarkIndex = fileUrl.indexOf("?");
+            if (questionMarkIndex > -1) {
+                fileUrl = fileUrl.substring(0, questionMarkIndex);
+            }
+            // 9. 上传图片
+            PictureUploadRequest pictureUploadRequest = new PictureUploadRequest();
+            try {
+                if (StrUtil.isNotBlank(namePrefix)) {
+                    // 设置图片名称，序号连续递增
+                    pictureUploadRequest.setPicName(namePrefix + (count + 1));
+                }
+
+                PictureVO pictureVO = pictureService.uploadPicture(fileUrl, pictureUploadRequest, loginUser);
+                log.info("图片上传成功, id = {}", pictureVO.getId());
+                uploadCount++;
+            } catch (Exception e) {
+                log.error("图片上传失败", e);
+                continue;
+            }
+            if (uploadCount >= count) {
+                break;
+            }
+        }
+        return uploadCount;
     }
 }

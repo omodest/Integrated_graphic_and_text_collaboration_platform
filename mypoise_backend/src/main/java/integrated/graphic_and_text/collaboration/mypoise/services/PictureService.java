@@ -3,6 +3,7 @@ package integrated.graphic_and_text.collaboration.mypoise.services;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureQueryRequest;
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureReviewRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureUploadRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.file.UploadPictureResult;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.Picture;
@@ -20,19 +21,31 @@ import java.io.File;
 */
 public interface PictureService extends IService<Picture> {
 
-    /**
-     * 上传图片（数据万象）
-     * @param multipartFile 上传的文件
-     * @param uploadPathPrefix 上传路径的前缀
-     * @return
-     */
-    UploadPictureResult uploadPicture(MultipartFile multipartFile, String uploadPathPrefix);
-
-    /**
-     * 文件校验（上传）
-     * @param multipartFile 上传的文件
-     */
-    void validPicture(MultipartFile multipartFile);
+//    /**
+//     * 上传图片（数据万象）
+//     * @param multipartFile 上传的文件
+//     * @param uploadPathPrefix 上传路径的前缀
+//     * @return
+//     */
+//    UploadPictureResult uploadPicture(MultipartFile multipartFile, String uploadPathPrefix);
+//
+//    /**
+//     * 上传图片(URL上传)
+//     * @return
+//     */
+//    UploadPictureResult uploadPictureByUrl(String fileUrl, String uploadPathPrefix);
+//
+//    /**
+//     * 文件校验（上传）
+//     * @param multipartFile 上传的文件
+//     */
+//    void validPicture(MultipartFile multipartFile);
+//
+//    /**
+//     * URL校验
+//     * @param fileUrl
+//     */
+//    void validPicture(String fileUrl);
 
     /**
      * 文件校验
@@ -48,12 +61,12 @@ public interface PictureService extends IService<Picture> {
 
     /**
      * 文件上传（对象存储）
-     * @param multipartFile 上传的文件
+     * @param inputSource 文件上传的源信息
      * @param pictureUploadRequest 图片上传请求
      * @param loginUser
      * @return
      */
-    PictureVO uploadPicture(MultipartFile multipartFile, PictureUploadRequest pictureUploadRequest, User loginUser);
+    PictureVO uploadPicture(Object inputSource, PictureUploadRequest pictureUploadRequest, User loginUser);
 
     /**
      * 拼接查询 query_wrapper
@@ -76,4 +89,18 @@ public interface PictureService extends IService<Picture> {
      * @return
      */
     Page<PictureVO> getPagePictureVo(Page<Picture> picturePage);
+
+    /**
+     * 图片审核
+     * @param pictureReviewRequest  审核请求
+     * @param loginUser 当前登录用户
+     */
+    void doPictureReview(PictureReviewRequest pictureReviewRequest, User loginUser);
+
+    /**
+     * 管理员自动过审
+     * @param picture
+     * @param loginUser
+     */
+    void filterReviewParam(Picture picture, User loginUser);
 }

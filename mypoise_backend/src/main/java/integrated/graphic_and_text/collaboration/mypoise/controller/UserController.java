@@ -20,6 +20,7 @@ import integrated.graphic_and_text.collaboration.mypoise.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -42,7 +43,7 @@ public class UserController {
     private UserService userService;
 
     @Resource
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 用户登录
@@ -99,7 +100,7 @@ public class UserController {
         ThrowUtils.throwIf(ObjectUtil.isEmpty(userBindRequest), ErrorCode.PARAMS_ERROR);
         boolean b = userService.userBind(userBindRequest.getEmail(), userBindRequest.getCaptcha(), httpServletRequest);
         // 验证码删除
-        redisTemplate.delete(CAPTCHA_CACHE_KEY + userBindRequest.getEmail());
+        stringRedisTemplate.delete(CAPTCHA_CACHE_KEY + userBindRequest.getEmail());
         return ResultUtils.success(b);
     }
 
@@ -137,7 +138,7 @@ public class UserController {
         try {
             userService.sendEmail(email, captcha);
             // 验证码存储redis，过期时间5分钟
-            redisTemplate.opsForValue().set(CAPTCHA_CACHE_KEY + email,captcha,5, TimeUnit.MINUTES);
+            stringRedisTemplate.opsForValue().set(CAPTCHA_CACHE_KEY + email,captcha,5, TimeUnit.MINUTES);
             return ResultUtils.success(true);
         } catch (MessagingException e) {
             log.error("【发送验证码失败】" + e.getMessage());
@@ -160,7 +161,7 @@ public class UserController {
         // 执行注册
         Long userId = userService.userRegister(request.getUserAccount(), request.getUserPassword(), request.getEmail(), request.getCaptcha());
         // 验证码删除
-        redisTemplate.delete(CAPTCHA_CACHE_KEY + request.getEmail());
+        stringRedisTemplate.delete(CAPTCHA_CACHE_KEY + request.getEmail());
         return ResultUtils.success(userId);
     }
 

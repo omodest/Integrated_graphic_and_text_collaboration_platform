@@ -27,7 +27,7 @@
               {{ picture.category ?? '默认' }}
             </a-descriptions-item>
             <a-descriptions-item label="标签">
-              <a-tag v-for="tag in picture.tags" :key="tag">
+              <a-tag v-for="tag in picture.tagNames" :key="tag">
                 {{ tag }}
               </a-tag>
             </a-descriptions-item>
@@ -82,7 +82,7 @@ interface Props {
 const props = defineProps<Props>()
 const picture = ref<API.PictureVO>({})
 const loginUserStore = useLoginUserStore()
-// 是否具有编辑权限
+// 是否具有编辑权限 todo 这里可以在详情页面直接添加审核按钮，提供给管理员使用,所以不急
 const canEdit = computed(() => {
   const loginUser = loginUserStore.loginUser
   // 未登录不可编辑

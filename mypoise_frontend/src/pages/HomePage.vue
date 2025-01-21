@@ -46,9 +46,10 @@
 
             <template #cover>
               <img
-                :alt="picture.name"
-                :src="picture.url"
                 style="height: 180px; object-fit: cover"
+                :alt="picture.name"
+                :src="picture.thumbnailUrl ?? picture.url"
+                loading="lazy"
               />
             </template>
             <!-- 图片详情信息           -->
@@ -80,7 +81,7 @@ import {getHotTagsUsingGet, queryTagsUsingPost} from "@/api/pictureTagsRelationC
 const msg = "这里是本平台的主页~";
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
-  listPictureVoByPageUsingPost,
+  listPictureVoByPageUsingPost, listPictureVoByPageWithCacheUsingPost,
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
@@ -201,8 +202,9 @@ const doClickPicture = (picture: API.PictureVO) => {
 let hotList = []
 const getHotTag = async () => {
   const response = await getHotTagsUsingGet();
+  console.log(response.data)
   if (response.data.code === 0){
-    hotList = response.data.data.map(tag => tag.tagName);
+    hotList = response.data.data;
   }
 }
 

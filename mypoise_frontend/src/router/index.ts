@@ -83,6 +83,14 @@ const router = createRouter({
       component: () => import('../pages/picture/AddPicturePage.vue'),
     },
     {
+      path: '/add_picture/batch',
+      name: '批量创建图片',
+      component: () => import('../pages/picture/AddPictureBatchPage.vue'),
+      meta: {
+        hideInMenu: true,
+      },
+    },
+    {
       path: '/noAuth',
       name: 'NoAuth',
       component: () => import('../pages/noauth/NoAuthPage.vue'),

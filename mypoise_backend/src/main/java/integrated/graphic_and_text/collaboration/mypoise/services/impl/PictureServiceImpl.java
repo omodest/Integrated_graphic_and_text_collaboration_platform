@@ -1,4 +1,9 @@
 package integrated.graphic_and_text.collaboration.mypoise.services.impl;
+import cn.hutool.http.HttpResponse;
+import cn.hutool.http.HttpStatus;
+import cn.hutool.http.HttpUtil;
+import cn.hutool.http.Method;
+import com.google.common.collect.Lists;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
@@ -14,8 +19,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qcloud.cos.model.PutObjectResult;
 import com.qcloud.cos.model.ciModel.persistence.ImageInfo;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureQueryRequest;
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureReviewRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureUploadRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.file.UploadPictureResult;
+import integrated.graphic_and_text.collaboration.mypoise.entity.enums.PictureReviewStatusEnum;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.*;
 import integrated.graphic_and_text.collaboration.mypoise.entity.vo.PictureVO;
 import integrated.graphic_and_text.collaboration.mypoise.entity.vo.UserInfoVO;
@@ -23,19 +30,22 @@ import integrated.graphic_and_text.collaboration.mypoise.exception.BusinessExcep
 import integrated.graphic_and_text.collaboration.mypoise.exception.ErrorCode;
 import integrated.graphic_and_text.collaboration.mypoise.exception.ThrowUtils;
 import integrated.graphic_and_text.collaboration.mypoise.manage.CosManager;
+import integrated.graphic_and_text.collaboration.mypoise.manage.upload.FilePictureUpload;
+import integrated.graphic_and_text.collaboration.mypoise.manage.upload.PictureUploadTemplate;
+import integrated.graphic_and_text.collaboration.mypoise.manage.upload.UrlPictureUpload;
 import integrated.graphic_and_text.collaboration.mypoise.mapper.PictureMapper;
 import integrated.graphic_and_text.collaboration.mypoise.services.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static integrated.graphic_and_text.collaboration.mypoise.constant.FileConstant.*;
@@ -50,12 +60,6 @@ import static integrated.graphic_and_text.collaboration.mypoise.constant.FileCon
 public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     implements PictureService{
 
-    /**
-     * COS 文件 操作
-     */
-    @Resource
-    private CosManager cosManager;
-
     @Resource
     private UserService userService;
 
@@ -67,59 +71,162 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 
     @Resource
     private PictureTagRelationService pictureTagRelationService;
-    @Override
-    public UploadPictureResult uploadPicture(MultipartFile multipartFile, String uploadPathPrefix) {
-        // 1. 图片校验
-        validPicture(multipartFile);
-        // 2. 拼接存储路径
-        String uuid = RandomUtil.randomNumbers(16);
-        String originalFilename = multipartFile.getOriginalFilename();
-        String uploadPath = String.format("%s_%s.%s", DateUtil.formatDate(new Date()), uuid, FileUtil.getSuffix(originalFilename));
-        // 3. 上传图片
-        File tempFile = null;
-        try {
-            // 创建临时文件
-            tempFile = File.createTempFile(uploadPath, null);
-            multipartFile.transferTo(tempFile);
-            // 上传图片（数据万象）
-            PutObjectResult putObjectResult = cosManager.putPictureObject(uploadPath, tempFile);
-            // 拿到数据万向分析出来的图片信息
-            ImageInfo imageInfo = putObjectResult.getCiUploadResult()
-                    .getOriginalInfo()
-                    .getImageInfo();
 
-            // 封装返回结果
-            UploadPictureResult uploadPictureResult = new UploadPictureResult();
-            Integer width = imageInfo.getWidth();
-            Integer height = imageInfo.getHeight();
-            double picScale = NumberUtil.round(width * 1.0 / height, 2).doubleValue();
-            String format = imageInfo.getFormat();
-            uploadPictureResult.setUrl(COS_HOST + "/" + uploadPath);
-            uploadPictureResult.setPicName(FileUtil.mainName(originalFilename));
-            uploadPictureResult.setPicSize(FileUtil.size(tempFile));
-            uploadPictureResult.setPicWidth(width);
-            uploadPictureResult.setPicHeight(height);
-            uploadPictureResult.setPicScale(picScale);
-            uploadPictureResult.setPicFormat(format);
+    @Resource
+    private FilePictureUpload filePictureUpload;
 
-            return uploadPictureResult;
-        } catch (IOException e) {
-            log.error("数据上传到对象存储失败。(数据万象)");
-            // 处理文件上传异常
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传文件失败");
-        }finally {
-            // 删除临时文件
-            deleteTempFile(tempFile);
-        }
-    }
+    @Resource
+    private UrlPictureUpload urlPictureUpload;
 
-    @Override
-    public void validPicture(MultipartFile multipartFile) {
-        ThrowUtils.throwIf(multipartFile == null, ErrorCode.PARAMS_ERROR, "上传的图片不能为空");
-        ThrowUtils.throwIf(multipartFile.getSize() > FILE_SIZE_UPLOAD_LIMIT, ErrorCode.PARAMS_ERROR, "上传图片不能超过2MB");
-        ThrowUtils.throwIf(!FILE_TYPE_UPLOAD_LIMIT.contains(FileUtil.getSuffix(multipartFile.getOriginalFilename())),
-                ErrorCode.PARAMS_ERROR, "格式错误");
-    }
+//    @Override
+//    public UploadPictureResult uploadPicture(MultipartFile multipartFile, String uploadPathPrefix) {
+//        // 1. 图片校验
+//        validPicture(multipartFile);
+//        // 2. 拼接存储路径
+//        String uuid = RandomUtil.randomNumbers(16);
+//        String originalFilename = multipartFile.getOriginalFilename();
+//        String uploadPath = String.format("%s_%s.%s", DateUtil.formatDate(new Date()), uuid, FileUtil.getSuffix(originalFilename));
+//        // 3. 上传图片
+//        File tempFile = null;
+//        try {
+//            // 创建临时文件
+//            tempFile = File.createTempFile(uploadPath, null);
+//            multipartFile.transferTo(tempFile);
+//            // 上传图片（数据万象）
+//            PutObjectResult putObjectResult = cosManager.putPictureObject(uploadPath, tempFile);
+//            // 拿到数据万向分析出来的图片信息
+//            ImageInfo imageInfo = putObjectResult.getCiUploadResult()
+//                    .getOriginalInfo()
+//                    .getImageInfo();
+//
+//            // 封装返回结果
+//            UploadPictureResult uploadPictureResult = new UploadPictureResult();
+//            Integer width = imageInfo.getWidth();
+//            Integer height = imageInfo.getHeight();
+//            double picScale = NumberUtil.round(width * 1.0 / height, 2).doubleValue();
+//            String format = imageInfo.getFormat();
+//            uploadPictureResult.setUrl(COS_HOST + "/" + uploadPath);
+//            uploadPictureResult.setPicName(FileUtil.mainName(originalFilename));
+//            uploadPictureResult.setPicSize(FileUtil.size(tempFile));
+//            uploadPictureResult.setPicWidth(width);
+//            uploadPictureResult.setPicHeight(height);
+//            uploadPictureResult.setPicScale(picScale);
+//            uploadPictureResult.setPicFormat(format);
+//
+//            return uploadPictureResult;
+//        } catch (IOException e) {
+//            log.error("数据上传到对象存储失败。(数据万象)");
+//            // 处理文件上传异常
+//            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传文件失败");
+//        }finally {
+//            // 删除临时文件
+//            deleteTempFile(tempFile);
+//        }
+//    }
+//
+//    @Override
+//    public UploadPictureResult uploadPictureByUrl(String fileUrl, String uploadPathPrefix) {
+//        // 1. 图片校验
+//        validPicture(fileUrl);
+//        // 2. 拼接存储路径
+//        String uuid = RandomUtil.randomString(16);
+//        String originFilename = FileUtil.mainName(fileUrl);
+//        String uploadFilename = String.format("%s_%s.%s", DateUtil.formatDate(new Date()), uuid,
+//                FileUtil.getSuffix(originFilename));
+//        String uploadPath = String.format("/%s/%s", uploadPathPrefix, uploadFilename);
+//        File file = null;
+//        try {
+//            // 创建临时文件
+//            file = File.createTempFile(uploadPath, null);
+//            // 下根据URL载文件
+//            HttpUtil.downloadFile(fileUrl, file);
+//            // 上传图片
+//             PutObjectResult putObjectResult = cosManager.putPictureObject(uploadPath, file);
+//            // 拿到数据万向分析出来的图片信息
+//            ImageInfo imageInfo = putObjectResult.getCiUploadResult()
+//                    .getOriginalInfo()
+//                    .getImageInfo();
+//
+//            // 封装返回结果
+//            UploadPictureResult uploadPictureResult = new UploadPictureResult();
+//            Integer width = imageInfo.getWidth();
+//            Integer height = imageInfo.getHeight();
+//            double picScale = NumberUtil.round(width * 1.0 / height, 2).doubleValue();
+//            String format = imageInfo.getFormat();
+//            uploadPictureResult.setUrl(COS_HOST + "/" + uploadPath);
+//            uploadPictureResult.setPicName(FileUtil.mainName(originFilename));
+//            uploadPictureResult.setPicSize(FileUtil.size(file));
+//            uploadPictureResult.setPicWidth(width);
+//            uploadPictureResult.setPicHeight(height);
+//            uploadPictureResult.setPicScale(picScale);
+//            uploadPictureResult.setPicFormat(format);
+//
+//            return uploadPictureResult;
+//        } catch (Exception e) {
+//            log.error("图片上传到对象存储失败", e);
+//            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
+//        } finally {
+//            this.deleteTempFile(file);
+//        }
+//    }
+//
+//
+//
+//    @Override
+//    public void validPicture(MultipartFile multipartFile) {
+//        ThrowUtils.throwIf(multipartFile == null, ErrorCode.PARAMS_ERROR, "上传的图片不能为空");
+//        ThrowUtils.throwIf(multipartFile.getSize() > FILE_SIZE_UPLOAD_LIMIT, ErrorCode.PARAMS_ERROR, "上传图片不能超过2MB");
+//        ThrowUtils.throwIf(!FILE_TYPE_UPLOAD_LIMIT.contains(FileUtil.getSuffix(multipartFile.getOriginalFilename())),
+//                ErrorCode.PARAMS_ERROR, "格式错误");
+//    }
+//
+//    @Override
+//    public void validPicture(String fileUrl) {
+//        ThrowUtils.throwIf(StrUtil.isBlank(fileUrl), ErrorCode.PARAMS_ERROR, "文件地址不能为空");
+//
+//        try {
+//            // 1. 验证 URL 格式
+//            new URL(fileUrl); // 验证是否是合法的 URL
+//        } catch (MalformedURLException e) {
+//            throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件地址格式不正确");
+//        }
+//
+//        // 2. 校验 URL 协议
+//        ThrowUtils.throwIf(!(fileUrl.startsWith("http://") || fileUrl.startsWith("https://")),
+//                ErrorCode.PARAMS_ERROR, "仅支持 HTTP 或 HTTPS 协议的文件地址");
+//
+//        // 3. 发送 HEAD 请求以验证文件是否存在
+//        HttpResponse response = null;
+//        try {
+//            response = HttpUtil.createRequest(Method.HEAD, fileUrl).execute();
+//            // 未正常返回，无需执行其他判断
+//            if (response.getStatus() != HttpStatus.HTTP_OK) {
+//                return;
+//            }
+//            // 4. 校验文件类型
+//            String contentType = response.header("Content-Type");
+//            if (StrUtil.isNotBlank(contentType)) {
+//                // 允许的图片类型
+//                ThrowUtils.throwIf(!FILE_TYPE_UPLOAD_LIMIT.contains(contentType.toLowerCase()),
+//                        ErrorCode.PARAMS_ERROR, "文件类型错误");
+//            }
+//            // 5. 校验文件大小
+//            String contentLengthStr = response.header("Content-Length");
+//            if (StrUtil.isNotBlank(contentLengthStr)) {
+//                try {
+//                    long contentLength = Long.parseLong(contentLengthStr);
+//                    ThrowUtils.throwIf(contentLength > FILE_SIZE_UPLOAD_LIMIT, ErrorCode.PARAMS_ERROR, "文件大小不能超过 2M");
+//                } catch (NumberFormatException e) {
+//                    throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件大小格式错误");
+//                }
+//            }
+//        } finally {
+//            if (response != null) {
+//                response.close();
+//            }
+//        }
+//    }
+
 
     @Override
     public void validPicture(Picture picture) {
@@ -151,7 +258,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     }
 
     @Override
-    public PictureVO uploadPicture(MultipartFile multipartFile, PictureUploadRequest pictureUploadRequest, User loginUser) {
+    public PictureVO uploadPicture(Object inputSource, PictureUploadRequest pictureUploadRequest, User loginUser) {
         // 1. 参数校验
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR, "未找到用户信息");
         // 2. 判断是新增还是修改
@@ -168,16 +275,30 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             if (!exists){
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "图片不存在");
             }
+
+            Picture oldPicture = this.getById(pictureId);
+            // 仅本人或管理员可编辑
+            if (!oldPicture.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+                throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+            }
         }
+
         // 3. 增加数据库记录
         // 按照用户id划分目录
         String uploadPathPrefix  = String.format("public/%s", loginUser.getId());
 
-        // 调用 数据万象的图片上传
-        UploadPictureResult uploadPictureResult = this.uploadPicture(multipartFile, uploadPathPrefix);
+        // 调用 数据万象的图片上传(没使用模板方法前的 图片上传；现在使用模板方法 这里需要修改)
+//        UploadPictureResult uploadPictureResult = this.uploadPicture(multipartFile, uploadPathPrefix);
+        // 根据 inputSource 的类型区分上传方式
+        PictureUploadTemplate pictureUploadTemplate = filePictureUpload;
+        if (inputSource instanceof String) {
+            pictureUploadTemplate = urlPictureUpload;
+        }
+        UploadPictureResult uploadPictureResult = pictureUploadTemplate.uploadPicture(inputSource, uploadPathPrefix);
         // 构建entity
-        Picture picture = getPicture(loginUser, uploadPictureResult, pictureId);
-
+        Picture picture = getPicture(loginUser, uploadPictureResult, pictureUploadRequest, pictureId);
+        // 管理员自动过审
+        this.filterReviewParam(picture, loginUser);
         boolean result = this.saveOrUpdate(picture);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "图片上传失败");
         return PictureVO.objToVo(picture);
@@ -192,7 +313,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         Long id = pictureQueryRequest.getId();
         String name = pictureQueryRequest.getName();
         String introduction = pictureQueryRequest.getIntroduction();
-
+        // 分类筛选
         String categoryName = pictureQueryRequest.getCategory();
         QueryWrapper<PictureCategory> queryWrapper1 = new QueryWrapper<>();
         long categoryId = 0;
@@ -234,31 +355,37 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         boolean flag = false;
         // 拿到所有标签id； 输入了标签就说明需要将标签作为查询条件；
         QueryWrapper<PictureTags> queryWrapper2 = new QueryWrapper<>();
-        if (ObjUtil.isNotEmpty(tags)){
-            for (String tagName: tags){
-                flag = true;
-                queryWrapper2.eq("tagName", tagName);
-            }
+        if (ObjUtil.isNotEmpty(tags)) {
+            queryWrapper2.and(wrapper -> {
+                for (String tagName : tags) {
+                    wrapper.or().eq("tagName", tagName);
+                }
+            });
+            flag = true;
         }
+
         List<Long> collect = pictureTagsService.list(queryWrapper2).stream().
                 map(PictureTags::getId).collect(Collectors.toList());
 
-        // 如果修改了flag状态，才执行这些逻辑
+        // 如果修改了flag状态(说明选中了标签)，才执行这些逻辑
         if (flag){
             // 查询所有需要查出来的记录；有标签id，去图片关联表查询
             boolean flag1 = false;
             QueryWrapper<PictureTagRelation> queryWrapper3 = new QueryWrapper<>();
             if (CollUtil.isNotEmpty(collect)) {
-                for (long col : collect) {
-                    flag1 = true;
-                    queryWrapper3.eq("tagId",col);
-                }
+                queryWrapper3.and(wrapper -> {
+                    for (long col : collect) {
+                        wrapper.or().eq("tagId",col);
+                    }
+                });
+                flag1 = true;
             }else {
                 // 有标签 但图片标签表没有标签id,表示需要直接返回空；直接将-1作为查询条件；
-                queryWrapper.eq("id",-1);
+                queryWrapper.eq("tagId",-1);
             }
             // 输入了标签，且这个标签在图片标签管理表中存在
             if (flag1){
+                // 这里查询出来的就是需要展示的数据
                 List<PictureTagRelation> list = pictureTagRelationService.list(queryWrapper3);
                 // 有标签有标签id 查询; 没查到表示需要返回空，以-1作为查询条件；否则作为查询条件
                 if (ObjUtil.isEmpty(list)){
@@ -267,11 +394,18 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
                 }
                 // 表示输入了标签，这些标签都有标签ID，需要将这些标签作为查询条件
                 List<Long> col1 = list.stream().map(PictureTagRelation::getPictureId).collect(Collectors.toList());
-                if (ObjUtil.isEmpty(col1)) {
-                    queryWrapper3.in("pictureId", col1); // 添加多个 pictureId 条件
+                if (ObjUtil.isNotEmpty(col1)) {
+                    queryWrapper.in("id", col1); // 添加多个 pictureId 条件
                 }
             }
         }
+
+        Integer reviewStatus = pictureQueryRequest.getReviewStatus();
+        String reviewMessage = pictureQueryRequest.getReviewMessage();
+        Long reviewerId = pictureQueryRequest.getReviewerId();
+        queryWrapper.eq(ObjUtil.isNotEmpty(reviewStatus), "reviewStatus", reviewStatus);
+        queryWrapper.like(StrUtil.isNotBlank(reviewMessage), "reviewMessage", reviewMessage);
+        queryWrapper.eq(ObjUtil.isNotEmpty(reviewerId), "reviewerId", reviewerId);
 
         // 排序
         queryWrapper.orderBy(StrUtil.isNotEmpty(sortFiled), sortOrder.equals("ascend"), sortFiled);
@@ -319,16 +453,58 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         return pictureVOPage;
     }
 
-    private static Picture getPicture(User loginUser, UploadPictureResult uploadPictureResult, Long pictureId) {
+    @Override
+    public void doPictureReview(PictureReviewRequest pictureReviewRequest, User loginUser) {
+        Long id = pictureReviewRequest.getId();
+        Integer reviewStatus = pictureReviewRequest.getReviewStatus();
+        PictureReviewStatusEnum reviewStatusEnum = PictureReviewStatusEnum.getEnumByValue(reviewStatus);
+        if (id == null || reviewStatusEnum == null || PictureReviewStatusEnum.REVIEWING.equals(reviewStatusEnum)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 判断是否存在
+        Picture oldPicture = this.getById(id);
+        ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
+        // 已是该状态
+        if (oldPicture.getReviewStatus().equals(reviewStatus)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请勿重复审核");
+        }
+        // 更新审核状态
+        Picture updatePicture = new Picture();
+        BeanUtils.copyProperties(pictureReviewRequest, updatePicture);
+        updatePicture.setReviewerId(loginUser.getId());
+        updatePicture.setReviewTime(new Date());
+        boolean result = this.updateById(updatePicture);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+    }
+
+
+    @Override
+    public void filterReviewParam(Picture picture, User loginUser) {
+        if (userService.isAdmin(loginUser)){
+            picture.setReviewMessage("管理员自动过审");
+            picture.setReviewerId(loginUser.getId());
+            picture.setReviewTime(new Date());
+            picture.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+        } else {
+            picture.setReviewStatus(PictureReviewStatusEnum.REVIEWING.getValue());
+        }
+    }
+
+    private static Picture getPicture(User loginUser, UploadPictureResult uploadPictureResult, PictureUploadRequest pictureUploadRequest,Long pictureId) {
         Picture picture = new Picture();
         picture.setUrl(uploadPictureResult.getUrl());
-        picture.setName(uploadPictureResult.getPicName());
+        if (StrUtil.isNotEmpty(pictureUploadRequest.getPicName())){
+            picture.setName(pictureUploadRequest.getPicName());
+        }else {
+            picture.setName(uploadPictureResult.getPicName());
+        }
         picture.setPicSize(uploadPictureResult.getPicSize());
         picture.setPicWidth(uploadPictureResult.getPicWidth());
         picture.setPicHeight(uploadPictureResult.getPicHeight());
         picture.setPicScale(uploadPictureResult.getPicScale());
         picture.setPicFormat(uploadPictureResult.getPicFormat());
         picture.setUserId(loginUser.getId());
+        picture.setThumbnailUrl(uploadPictureResult.getThumbnailUrl());
 
         // 如果 pictureId 不为空，表示更新，否则是新增
         if (pictureId != null) {

@@ -8,6 +8,7 @@ import integrated.graphic_and_text.collaboration.mypoise.common.BaseResponse;
 import integrated.graphic_and_text.collaboration.mypoise.common.ResultUtils;
 import integrated.graphic_and_text.collaboration.mypoise.constant.FileConstant;
 import integrated.graphic_and_text.collaboration.mypoise.constant.UserConstant;
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.file.UploadPictureByBatchRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureUploadRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.file.UploadFileRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.enums.FileUploadBizEnum;
@@ -15,6 +16,7 @@ import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
 import integrated.graphic_and_text.collaboration.mypoise.entity.vo.PictureVO;
 import integrated.graphic_and_text.collaboration.mypoise.exception.BusinessException;
 import integrated.graphic_and_text.collaboration.mypoise.exception.ErrorCode;
+import integrated.graphic_and_text.collaboration.mypoise.exception.ThrowUtils;
 import integrated.graphic_and_text.collaboration.mypoise.manage.CosManager;
 import integrated.graphic_and_text.collaboration.mypoise.services.FileService;
 import integrated.graphic_and_text.collaboration.mypoise.services.PictureService;
@@ -130,7 +132,6 @@ public class FileController {
      * @return
      */
     @PostMapping("/upload/picture")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<PictureVO> uploadPicture(@RequestPart("file") MultipartFile multipartFile,
                                                  PictureUploadRequest pictureUploadRequest,
                                                  HttpServletRequest httpServletRequest){
@@ -139,5 +140,34 @@ public class FileController {
         PictureVO pictureVO = pictureService.uploadPicture(multipartFile, pictureUploadRequest, currentUser);
         return ResultUtils.success(pictureVO);
     }
+
+    /**
+     * 通过 URL 上传图片（可重新上传）
+     * @param pictureUploadRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/upload/url")
+    public BaseResponse<PictureVO> uploadPictureByUrl(
+            @RequestBody PictureUploadRequest pictureUploadRequest,
+            HttpServletRequest request) {
+        User loginUser = userService.getCurrentUser(request);
+        String fileUrl = pictureUploadRequest.getFileUrl();
+        PictureVO pictureVO = pictureService.uploadPicture(fileUrl, pictureUploadRequest, loginUser);
+        return ResultUtils.success(pictureVO);
+    }
+
+    @PostMapping("/upload/batch")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Integer> uploadPictureByBatch(
+            @RequestBody UploadPictureByBatchRequest uploadPictureByBatchRequest,
+            HttpServletRequest request
+    ) {
+        ThrowUtils.throwIf(uploadPictureByBatchRequest == null, ErrorCode.PARAMS_ERROR);
+        User loginUser = userService.getCurrentUser(request);
+        int uploadCount = fileService.uploadPictureByBatch(uploadPictureByBatchRequest, loginUser);
+        return ResultUtils.success(uploadCount);
+    }
+
 
 }

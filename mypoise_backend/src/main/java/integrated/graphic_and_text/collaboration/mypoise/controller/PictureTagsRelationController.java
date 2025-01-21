@@ -17,13 +17,17 @@ import integrated.graphic_and_text.collaboration.mypoise.services.PictureTagsSer
 import integrated.graphic_and_text.collaboration.mypoise.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static integrated.graphic_and_text.collaboration.mypoise.constant.CacheConstant.HOT_TAGS;
 
 @RestController
 @RequestMapping("/picture/tags")
@@ -40,10 +44,7 @@ public class PictureTagsRelationController {
     private PictureTagsService pictureTagsService;
 
     @Resource
-    private PictureTagRelationService pictureTagRelationService;
-
-    @Resource
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 删除标签
@@ -90,11 +91,19 @@ public class PictureTagsRelationController {
      * @return
      */
     @GetMapping("/hot")
-    public BaseResponse<List<PictureTags>> getHotTags() {
-        List<PictureTags> list = pictureTagsService.query()
-                .orderByDesc("applyTotal")
-                .last("LIMIT 3")
-                .list();
-        return ResultUtils.success(list);
+    public BaseResponse<String> getHotTags() {
+        // 查找缓存
+        String getCacheHotTag = stringRedisTemplate.opsForValue().get(HOT_TAGS);
+        // 未命中，查找数据库；写缓存
+        List<PictureTags> list = null;
+        if (StrUtil.isEmpty(getCacheHotTag)){
+            list = pictureTagsService.query()
+                    .orderByDesc("applyTotal")
+                    .last("LIMIT 3")
+                    .list();
+            String topTagNames = list.stream().map(PictureTags::getTagName).collect(Collectors.toList()).toString();
+            stringRedisTemplate.opsForValue().set(HOT_TAGS, topTagNames, 60, TimeUnit.SECONDS);
+        }
+        return ResultUtils.success(getCacheHotTag);
     }
 }

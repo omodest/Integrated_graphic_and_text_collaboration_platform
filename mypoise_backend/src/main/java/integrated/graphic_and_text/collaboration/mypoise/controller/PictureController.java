@@ -1,6 +1,8 @@
 package integrated.graphic_and_text.collaboration.mypoise.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import integrated.graphic_and_text.collaboration.mypoise.annotation.AuthCheck;
@@ -8,9 +10,8 @@ import integrated.graphic_and_text.collaboration.mypoise.common.BaseResponse;
 import integrated.graphic_and_text.collaboration.mypoise.common.DeleteRequest;
 import integrated.graphic_and_text.collaboration.mypoise.common.ResultUtils;
 import integrated.graphic_and_text.collaboration.mypoise.constant.UserConstant;
-import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureEditRequest;
-import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureQueryRequest;
-import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureUpdateRequest;
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.*;
+import integrated.graphic_and_text.collaboration.mypoise.entity.enums.PictureReviewStatusEnum;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.Picture;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.PictureCategory;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.PictureTagRelation;
@@ -25,12 +26,19 @@ import integrated.graphic_and_text.collaboration.mypoise.services.PictureTagRela
 import integrated.graphic_and_text.collaboration.mypoise.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static integrated.graphic_and_text.collaboration.mypoise.constant.CacheConstant.LOCAL_CACHE;
+
 
 @RestController
 @RequestMapping("/picture")
@@ -48,6 +56,9 @@ public class PictureController {
 
     @Resource
     private PictureCategoryService pictureCategoryService;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 删除图片 同步删除标签记录表中数据
@@ -99,6 +110,8 @@ public class PictureController {
         long id = pictureUpdateRequest.getId();
         Picture oldPicture = pictureService.getById(id);
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
+        // 管理员自动过审
+        pictureService.filterReviewParam(picture,userService.getCurrentUser(httpServletRequest));
         // 操作数据库
         boolean result = pictureService.updateById(picture);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
@@ -119,7 +132,13 @@ public class PictureController {
 
         QueryWrapper<PictureCategory> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("categoryName", pictureEditRequest.getCategory());
-        picture.setCategoryId(pictureCategoryService.getOne(queryWrapper).getId());
+        Long id1 = pictureCategoryService.getOne(queryWrapper).getId();
+        if (ObjectUtil.isNotEmpty(id1)){
+            picture.setCategoryId(id1);
+        }else {
+            picture.setCategoryId(1L);
+        }
+
 
         // 处理标签
         List<String> tagIds = pictureEditRequest.getTags();
@@ -138,6 +157,8 @@ public class PictureController {
         if (!oldPicture.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
+        // 管理员自动过审
+        pictureService.filterReviewParam(picture, loginUser);
         // 操作数据库
         boolean result = pictureService.updateById(picture);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
@@ -222,9 +243,12 @@ public class PictureController {
         long size = pictureQueryRequest.getPageSize();
         // 限制爬虫
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        // 普通用户默认只能查看已过审的数据
+        pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
         // 查询数据库
         Page<Picture> picturePage = pictureService.page(new Page<>(current, size),
                 pictureService.getQueryWrapper(pictureQueryRequest));
+
         // 为每个图片对象添加标签
         for (Picture picture : picturePage.getRecords()) {
             List<String> listTagNameWithPicId = pictureTagRelationService.getListTagNameWithPicId(picture.getId());
@@ -242,5 +266,72 @@ public class PictureController {
         // 获取封装类
         return ResultUtils.success(pagePictureVo);
     }
+
+    /**
+     * 管理员审核图片
+     * @param pictureReviewRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/review")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> doPictureReview(@RequestBody PictureReviewRequest pictureReviewRequest,
+                                                 HttpServletRequest request) {
+        ThrowUtils.throwIf(pictureReviewRequest == null, ErrorCode.PARAMS_ERROR);
+        User loginUser = userService.getCurrentUser(request);
+        pictureService.doPictureReview(pictureReviewRequest, loginUser);
+        return ResultUtils.success(true);
+    }
+
+    @PostMapping("/list/page/vo/cache")
+    public BaseResponse<Page<PictureVO>> listPictureVOByPageWithCache(@RequestBody PictureQueryRequest pictureQueryRequest,
+                                                                      HttpServletRequest request) {
+        long current = pictureQueryRequest.getCurrent();
+        long size = pictureQueryRequest.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        // 普通用户默认只能查看已过审的数据
+        pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+
+        // 多级缓存方案
+
+        // 1. 构建缓存key
+        String queryCondition = JSONUtil.toJsonStr(pictureQueryRequest);
+        String hashKey = DigestUtils.md5DigestAsHex(queryCondition.getBytes());
+        String cacheKey = "mypoise:listPictureVOByPage:" + hashKey;
+
+
+        // 2. 从本地缓存中查询
+        String cachedValue = LOCAL_CACHE.getIfPresent(cacheKey);
+        if (cachedValue != null) {
+            // 如果缓存命中，返回结果
+            Page<PictureVO> cachedPage = JSONUtil.toBean(cachedValue, Page.class);
+            return ResultUtils.success(cachedPage);
+        }
+        // 3. 本地缓存未命中； 从 Redis 缓存中查询
+        ValueOperations<String, String> valueOps = stringRedisTemplate.opsForValue();
+        cachedValue = valueOps.get(cacheKey);
+        if (cachedValue != null) {
+            // 如果缓存命中，返回结果；将数据存到本地缓存中
+            LOCAL_CACHE.put(cacheKey, cachedValue);
+            Page<PictureVO> cachedPage = JSONUtil.toBean(cachedValue, Page.class);
+            return ResultUtils.success(cachedPage);
+        }
+        // 4. redis未命中，查询数据库，存redis、存本地
+        Page<Picture> picturePage = pictureService.page(new Page<>(current, size),
+                pictureService.getQueryWrapper(pictureQueryRequest));
+        // 获取封装类
+        Page<PictureVO> pictureVOPage = pictureService.getPagePictureVo(picturePage);
+
+        String cacheValue = JSONUtil.toJsonStr(pictureVOPage);
+        LOCAL_CACHE.put(cacheKey, cacheValue);
+        // 5 - 10 分钟随机过期，防止雪崩
+        int cacheExpireTime = 300 +  RandomUtil.randomInt(0, 300);
+        valueOps.set(cacheKey, cacheValue, cacheExpireTime, TimeUnit.SECONDS);
+        // 返回结果
+        return ResultUtils.success(pictureVOPage);
+    }
+
+
 
 }

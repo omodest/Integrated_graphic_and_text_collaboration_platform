@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.connection.BitFieldSubCommands;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -74,7 +75,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * redis模板
      */
     @Resource
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 分布式锁
@@ -112,7 +113,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         // 2. 验证码校验
-        String cacheCaptcha = (String) redisTemplate.opsForValue().get(CAPTCHA_CACHE_KEY + email);
+        String cacheCaptcha = stringRedisTemplate.opsForValue().get(CAPTCHA_CACHE_KEY + email);
         if (StringUtils.isEmpty(cacheCaptcha)){
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "验证码过期!!!");
         }
@@ -146,7 +147,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         // 2. 验证码校验
-        String cacheCaptcha = (String) redisTemplate.opsForValue().get(CAPTCHA_CACHE_KEY + email);
+        String cacheCaptcha = stringRedisTemplate.opsForValue().get(CAPTCHA_CACHE_KEY + email);
         if (StringUtils.isEmpty(cacheCaptcha)){
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "验证码过期!!!");
         }
@@ -178,7 +179,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
         // 2. 验证码校验
-        String cacheCaptcha = (String) redisTemplate.opsForValue().get(CAPTCHA_CACHE_KEY + email);
+        String cacheCaptcha = stringRedisTemplate.opsForValue().get(CAPTCHA_CACHE_KEY + email);
         if (StringUtils.isEmpty(cacheCaptcha)){
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "验证码过期");
         }
@@ -338,7 +339,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 4. 获取今天是本月第几天，好用来实现签到功能
         int dayOfMonth = now.getDayOfMonth();
         // 5. 写redis操作
-        Boolean result = redisTemplate.opsForValue().setBit(key, dayOfMonth - 1, true);
+        Boolean result = stringRedisTemplate.opsForValue().setBit(key, dayOfMonth - 1, true);
         ThrowUtils.throwIf(Boolean.TRUE.equals(result),ErrorCode.OPERATION_ERROR,"今日已签到");
         // 6. 签到的奖励可以写到这里, 目前系统设计的是连续签到七天 获得1天会员;连续签到30天送 5天会员
         // 获取当前日期和时间
@@ -347,15 +348,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 使用 Calendar 增加时间
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentDate);
-        if (constantSignDay % 7 == 0){
+        if (constantSignDay != 0 && constantSignDay % 7 == 0){
             calendar.add(Calendar.DAY_OF_MONTH, 1); // 增加 5 天
             loginUser.setVip_expire(calendar.getTime());
         }
-        if (constantSignDay % 30 == 0){
+        if (constantSignDay != 0 && constantSignDay % 30 == 0){
             calendar.add(Calendar.DAY_OF_MONTH, 5); // 增加 5 天
             loginUser.setVip_expire(calendar.getTime());
         }
-        loginUser.setUserRole(UserConstant.VIP_ROLE);
+        loginUser.setUserRole(loginUser.getUserRole());
         loginUser.setEditTime(currentDate);
         this.updateById(loginUser);
         return true;
@@ -377,7 +378,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         int dayOfMonth = now.getDayOfMonth();
 
         // 5.获取本月截止今天为止的所有的签到记录，返回的是一个十进制的数字 BITFIELD sign:5:202403 GET U14 0
-        List<Long> result = redisTemplate.opsForValue().bitField(
+        List<Long> result = stringRedisTemplate.opsForValue().bitField(
                 key,
                 BitFieldSubCommands.create()
                         .get(BitFieldSubCommands.BitFieldType.unsigned(dayOfMonth)).valueAt(0)
