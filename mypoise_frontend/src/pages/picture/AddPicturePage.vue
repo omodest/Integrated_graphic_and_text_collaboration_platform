@@ -3,16 +3,18 @@
     <h2 style="margin-bottom: 16px">
       {{ route.query?.id ? '修改图片' : '创建图片' }}
     </h2>
-
+    <a-typography-paragraph v-if="spaceId" type="secondary">
+      保存至空间：<a :href="`/space/${spaceId}`" target="_blank">{{ spaceId }}</a>
+    </a-typography-paragraph>
     <!-- 选择上传方式 -->
     <a-tabs v-model:activeKey="uploadType">
       <a-tab-pane key="file" tab="文件上传">
         <!-- 图片上传组件 -->
-        <PictureUpload :picture="picture" :onSuccess="onSuccess" />
+        <PictureUpload :picture="picture" :spaceId="spaceId" :onSuccess="onSuccess" />
       </a-tab-pane>
       <a-tab-pane key="url" tab="URL 上传" force-render>
         <!-- URL 图片上传组件 -->
-        <UrlPictureUpload :picture="picture" :onSuccess="onSuccess" />
+        <UrlPictureUpload :picture="picture" :spaceId="spaceId"  :onSuccess="onSuccess" />
       </a-tab-pane>
     </a-tabs>
 
@@ -59,7 +61,7 @@
 </template>
 <script setup lang="ts">
 import PictureUpload from "@/components/PictureUpload.vue";
-import {onMounted, reactive, ref} from "vue";
+import {computed, onMounted, reactive, ref} from "vue";
 import {editPictureUsingPost, getPictureVoByIdUsingGet} from "@/api/pictureController";
 import {message} from "ant-design-vue";
 import {useRoute, useRouter} from "vue-router";
@@ -79,6 +81,11 @@ const categoryOptions = ref<string[]>([])
 const tagOptions = ref<string[]>([])
 // 上传图片方式枚举
 const uploadType = ref<'file' | 'url'>('file')
+// 空间 id
+const spaceId = computed(() => {
+  return route.query?.spaceId
+})
+
 /**
  * 1. 上传图片后，可以将得到的图片信息（比如名称）填充到表单
  * 一开始上传的图片会自带一个图片名称，所以这里将图片名称和图片在页面中渲染出来
@@ -101,6 +108,7 @@ const handleSubmit = async (values: any) => {
   console.log(values)
   const res = await editPictureUsingPost({
     id: pictureId,
+    spaceId: spaceId.value,
     ...values,
   })
   if (res.data.code === 0 && res.data.data) {

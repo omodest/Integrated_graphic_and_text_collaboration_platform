@@ -6,11 +6,13 @@ import * as fileController from './fileController'
 import * as pictureCategoryController from './pictureCategoryController'
 import * as pictureController from './pictureController'
 import * as pictureTagsRelationController from './pictureTagsRelationController'
+import * as spaceController from './spaceController'
 import * as userController from './userController'
 export default {
   fileController,
   pictureCategoryController,
   pictureController,
   pictureTagsRelationController,
+  spaceController,
   userController,
 }

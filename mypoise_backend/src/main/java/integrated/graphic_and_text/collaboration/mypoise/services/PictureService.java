@@ -2,6 +2,7 @@ package integrated.graphic_and_text.collaboration.mypoise.services;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureEditRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureQueryRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureReviewRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureUploadRequest;
@@ -12,6 +13,7 @@ import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
 import integrated.graphic_and_text.collaboration.mypoise.entity.vo.PictureVO;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 
 /**
@@ -103,4 +105,26 @@ public interface PictureService extends IService<Picture> {
      * @param loginUser
      */
     void filterReviewParam(Picture picture, User loginUser);
+
+    /**
+     * 删除图片
+     *
+     * @param pictureId
+     * @param loginUser
+     */
+    void deletePicture(long pictureId, User loginUser);
+    /**
+     * 编辑图片
+     *
+     * @param pictureEditRequest
+     * @param request
+     */
+    void editPicture(PictureEditRequest pictureEditRequest, HttpServletRequest request);
+    /**
+     * 校验空间图片的权限
+     *
+     * @param loginUser
+     * @param picture
+     */
+    void checkPictureAuth(User loginUser, Picture picture);
 }

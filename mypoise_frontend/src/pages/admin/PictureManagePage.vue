@@ -42,6 +42,10 @@
         <a-button type="primary" html-type="submit" href="/add_picture/batch">批量创建图片</a-button>
       </a-form-item>
 
+      <a-form-item>
+        <a-button type="primary" html-type="submit" href="/add_picture">创建图片</a-button>
+      </a-form-item>
+
     </a-form>
     <div style="margin-bottom: 16px" />
     <!-- 表格 -->
@@ -257,6 +261,11 @@ const columns = [
 {
     title: '用户 id',
     dataIndex: 'userId',
+    width: 80,
+  },
+  {
+    title: '空间 id',
+    dataIndex: 'spaceId',
     width: 80,
   },
   {
