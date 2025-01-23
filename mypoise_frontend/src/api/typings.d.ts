@@ -11,6 +11,12 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseListImageSearchResult_ = {
+    code?: number
+    data?: ImageSearchResult[]
+    message?: string
+  }
+
   type BaseResponseListPictureCategory_ = {
     code?: number
     data?: PictureCategory[]
@@ -20,6 +26,12 @@ declare namespace API {
   type BaseResponseListPictureTags_ = {
     code?: number
     data?: PictureTags[]
+    message?: string
+  }
+
+  type BaseResponseListPictureVO_ = {
+    code?: number
+    data?: PictureVO[]
     message?: string
   }
 
@@ -158,6 +170,11 @@ declare namespace API {
     id?: number
   }
 
+  type ImageSearchResult = {
+    fromUrl?: string
+    thumbUrl?: string
+  }
+
   type PagePicture_ = {
     current?: number
     pages?: number
@@ -203,10 +220,12 @@ declare namespace API {
     categoryId?: number
     createTime?: string
     editTime?: string
+    endEditTime?: string
     id?: number
     introduction?: string
     isDelete?: number
     name?: string
+    picColor?: string
     picFormat?: string
     picHeight?: number
     picScale?: number
@@ -217,6 +236,7 @@ declare namespace API {
     reviewTime?: string
     reviewerId?: number
     spaceId?: number
+    startEditTime?: string
     tagNames?: string[]
     thumbnailUrl?: string
     updateTime?: string
@@ -233,6 +253,14 @@ declare namespace API {
     updateTime?: string
   }
 
+  type PictureEditByBatchRequest = {
+    category?: string
+    nameRule?: string
+    pictureIdList?: number[]
+    spaceId?: number
+    tags?: string[]
+  }
+
   type PictureEditRequest = {
     category?: string
     id?: number
@@ -244,6 +272,7 @@ declare namespace API {
   type PictureQueryRequest = {
     category?: string
     current?: number
+    endEditTime?: string
     id?: number
     introduction?: string
     name?: string
@@ -261,6 +290,7 @@ declare namespace API {
     sortFiled?: string
     sortOrder?: string
     spaceId?: number
+    startEditTime?: string
     tags?: string[]
     userId?: number
   }
@@ -304,6 +334,7 @@ declare namespace API {
     id?: number
     introduction?: string
     name?: string
+    picColor?: string
     picFormat?: string
     picHeight?: number
     picScale?: number
@@ -316,6 +347,15 @@ declare namespace API {
     url?: string
     user?: UserInfoVO
     userId?: number
+  }
+
+  type SearchPictureByColorRequest = {
+    picColor?: string
+    spaceId?: number
+  }
+
+  type SearchPictureByPictureRequest = {
+    pictureId?: number
   }
 
   type Space = {

@@ -54,6 +54,10 @@ public class Picture implements Serializable {
     @TableField(exist = false)
     private String category;
 
+    @TableField(exist = false)
+    private Date startEditTime;
+    @TableField(exist = false)
+    private Date endEditTime;
     /**
      * 图片体积
      */
@@ -129,6 +133,11 @@ public class Picture implements Serializable {
      * 空间 id
      */
     private Long spaceId;
+
+    /**
+     * 图片主色调
+     */
+    private String picColor;
 
 
     @TableField(exist = false)

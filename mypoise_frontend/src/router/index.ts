@@ -128,6 +128,14 @@ const router = createRouter({
       },
     },
     {
+      path: '/search_picture',
+      name: '图片搜索',
+      component: () => import('../pages/picture/SearchPicturePage.vue'),
+      meta: {
+        hideInMenu: true,
+      },
+    },
+    {
       path: '/noAuth',
       name: 'NoAuth',
       component: () => import('../pages/noauth/NoAuthPage.vue'),

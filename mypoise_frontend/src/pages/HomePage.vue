@@ -161,7 +161,7 @@ const fetchData = async () => {
   })
 
   const res = await listPictureVoByPageUsingPost(params)
-  if (res.data.code === 0 && res.data.data ) {
+  if (res.data.code === 0) {
     dataList.value = res.data.data.records ?? []
     total.value = res.data.data.total ?? 0
   }else if (res.data.code === 0 && res.data.data === null){

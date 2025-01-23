@@ -2,10 +2,7 @@ package integrated.graphic_and_text.collaboration.mypoise.services;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureEditRequest;
-import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureQueryRequest;
-import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureReviewRequest;
-import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureUploadRequest;
+import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.*;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.file.UploadPictureResult;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -15,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.util.List;
 
 /**
 * @author poise
@@ -87,7 +85,6 @@ public interface PictureService extends IService<Picture> {
     /**
      * 获取图片脱敏信息(返回给前端的服务)
      * @param picturePage
-     * @param request
      * @return
      */
     Page<PictureVO> getPagePictureVo(Page<Picture> picturePage);
@@ -127,4 +124,21 @@ public interface PictureService extends IService<Picture> {
      * @param picture
      */
     void checkPictureAuth(User loginUser, Picture picture);
+
+    /**
+     * 颜色搜索
+     * @param spaceId
+     * @param picColor
+     * @param loginUser
+     * @return
+     */
+    List<PictureVO> searchPictureByColor(Long spaceId, String picColor, User loginUser);
+
+    /**
+     * 批量编辑
+     * @param pictureEditByBatchRequest
+     * @param loginUser
+     */
+    void editPictureByBatch(PictureEditByBatchRequest pictureEditByBatchRequest, User loginUser);
+
 }
