@@ -8,6 +8,8 @@ import router from './router'
 import Antd from 'ant-design-vue'
 import 'ant-design-vue/dist/reset.css'
 import '@/access'
+import VueCropper from 'vue-cropper'
+import 'vue-cropper/dist/index.css'
 
 // 创建vue实例，并绑定到根组件App中
 const app = createApp(App)
@@ -15,5 +17,5 @@ const app = createApp(App)
 app.use(Antd)
 app.use(createPinia())
 app.use(router)
-
+app.use(VueCropper)
 app.mount('#app')

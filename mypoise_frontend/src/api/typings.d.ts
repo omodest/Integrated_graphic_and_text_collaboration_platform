@@ -5,6 +5,18 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseCreateOutPaintingTaskResponse_ = {
+    code?: number
+    data?: CreateOutPaintingTaskResponse
+    message?: string
+  }
+
+  type BaseResponseGetOutPaintingTaskResponse_ = {
+    code?: number
+    data?: GetOutPaintingTaskResponse
+    message?: string
+  }
+
   type BaseResponseInt_ = {
     code?: number
     data?: number
@@ -124,6 +136,18 @@ declare namespace API {
     categoryName?: string
   }
 
+  type CreateOutPaintingTaskResponse = {
+    code?: string
+    message?: string
+    output?: Output
+    requestId?: string
+  }
+
+  type CreatePictureOutPaintingTaskRequest = {
+    parameters?: Parameters
+    pictureId?: number
+  }
+
   type DeleteRequest = {
     id?: number
   }
@@ -140,9 +164,19 @@ declare namespace API {
     repeat?: boolean
   }
 
+  type GetOutPaintingTaskResponse = {
+    output?: Output1
+    requestId?: string
+  }
+
   type getPictureByIdUsingGETParams = {
     /** id */
     id?: number
+  }
+
+  type getPictureOutPaintingTaskUsingGETParams = {
+    /** taskId */
+    taskId?: string
   }
 
   type getPictureVOByIdUsingGETParams = {
@@ -173,6 +207,23 @@ declare namespace API {
   type ImageSearchResult = {
     fromUrl?: string
     thumbUrl?: string
+  }
+
+  type Output = {
+    taskId?: string
+    taskStatus?: string
+  }
+
+  type Output1 = {
+    code?: string
+    endTime?: string
+    message?: string
+    outputImageUrl?: string
+    scheduledTime?: string
+    submitTime?: string
+    taskId?: string
+    taskMetrics?: TaskMetrics
+    taskStatus?: string
   }
 
   type PagePicture_ = {
@@ -213,6 +264,20 @@ declare namespace API {
     records?: UserInfoVO[]
     size?: number
     total?: number
+  }
+
+  type Parameters = {
+    addWatermark?: boolean
+    angle?: number
+    bestQuality?: boolean
+    bottomOffset?: number
+    leftOffset?: number
+    limitImageSize?: boolean
+    outputRatio?: string
+    rightOffset?: number
+    topOffset?: number
+    xScale?: number
+    yScale?: number
   }
 
   type Picture = {
@@ -422,6 +487,12 @@ declare namespace API {
     updateTime?: string
     user?: UserInfoVO
     userId?: number
+  }
+
+  type TaskMetrics = {
+    failed?: number
+    succeeded?: number
+    total?: number
   }
 
   type testDownloadFileUsingGETParams = {

@@ -1,21 +1,15 @@
 package integrated.graphic_and_text.collaboration.mypoise.services.impl;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.*;
-import cn.hutool.http.HttpResponse;
-import cn.hutool.http.HttpStatus;
-import cn.hutool.http.HttpUtil;
-import cn.hutool.http.Method;
-import cn.hutool.json.JSONUtil;
-import com.google.common.collect.Lists;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.io.FileUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.qcloud.cos.model.PutObjectResult;
-import com.qcloud.cos.model.ciModel.persistence.ImageInfo;
+import integrated.graphic_and_text.collaboration.mypoise.api.aliyunai.AliYunAiApi;
+import integrated.graphic_and_text.collaboration.mypoise.api.aliyunai.model.CreateOutPaintingTaskRequest;
+import integrated.graphic_and_text.collaboration.mypoise.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.*;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.file.UploadPictureResult;
 import integrated.graphic_and_text.collaboration.mypoise.entity.enums.PictureReviewStatusEnum;
@@ -25,7 +19,6 @@ import integrated.graphic_and_text.collaboration.mypoise.entity.vo.UserInfoVO;
 import integrated.graphic_and_text.collaboration.mypoise.exception.BusinessException;
 import integrated.graphic_and_text.collaboration.mypoise.exception.ErrorCode;
 import integrated.graphic_and_text.collaboration.mypoise.exception.ThrowUtils;
-import integrated.graphic_and_text.collaboration.mypoise.manage.CosManager;
 import integrated.graphic_and_text.collaboration.mypoise.manage.upload.FilePictureUpload;
 import integrated.graphic_and_text.collaboration.mypoise.manage.upload.PictureUploadTemplate;
 import integrated.graphic_and_text.collaboration.mypoise.manage.upload.UrlPictureUpload;
@@ -38,20 +31,14 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static integrated.graphic_and_text.collaboration.mypoise.constant.FileConstant.*;
 
 /**
 * @author poise
@@ -86,6 +73,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 
     @Resource
     private TransactionTemplate transactionTemplate;
+
+    @Resource
+    private AliYunAiApi aliYunAiApi;
 
 //    @Override
 //    public UploadPictureResult uploadPicture(MultipartFile multipartFile, String uploadPathPrefix) {
@@ -823,6 +813,25 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "名称解析错误");
         }
     }
+
+    @Override
+    public CreateOutPaintingTaskResponse createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser) {
+        // 获取图片信息
+        Long pictureId = createPictureOutPaintingTaskRequest.getPictureId();
+        Picture picture = Optional.ofNullable(this.getById(pictureId))
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图片不存在"));
+        // 校验权限
+        checkPictureAuth(loginUser, picture);
+        // 创建扩图任务
+        CreateOutPaintingTaskRequest createOutPaintingTaskRequest = new CreateOutPaintingTaskRequest();
+        CreateOutPaintingTaskRequest.Input input = new CreateOutPaintingTaskRequest.Input();
+        input.setImageUrl(picture.getUrl());
+        createOutPaintingTaskRequest.setInput(input);
+        createOutPaintingTaskRequest.setParameters(createPictureOutPaintingTaskRequest.getParameters());
+        // 创建任务
+        return aliYunAiApi.createOutPaintingTask(createOutPaintingTaskRequest);
+    }
+
 
 }
 

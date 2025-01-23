@@ -2,6 +2,7 @@ package integrated.graphic_and_text.collaboration.mypoise.services;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import integrated.graphic_and_text.collaboration.mypoise.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.*;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.file.UploadPictureResult;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.Picture;
@@ -141,4 +142,12 @@ public interface PictureService extends IService<Picture> {
      */
     void editPictureByBatch(PictureEditByBatchRequest pictureEditByBatchRequest, User loginUser);
 
+
+    /**
+     * AI扩图接口
+     * @param createPictureOutPaintingTaskRequest
+     * @param loginUser
+     * @return
+     */
+    CreateOutPaintingTaskResponse createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser) ;
 }

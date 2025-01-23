@@ -123,6 +123,14 @@
         </dependency>
 
 
+        <!-- 阿里云AI模型 -->
+        <!-- https://mvnrepository.com/artifact/com.alibaba/dashscope-sdk-java -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dashscope-sdk-java</artifactId>
+            <version>2.18.0</version>
+        </dependency>
+
 
     </dependencies>
     <dependencyManagement>
