@@ -53,11 +53,12 @@ public class Picture implements Serializable {
     private List<String> tagNames;
     @TableField(exist = false)
     private String category;
-
     @TableField(exist = false)
     private Date startEditTime;
     @TableField(exist = false)
     private Date endEditTime;
+    @TableField(exist = false)
+    private PictureCategory pictureCategory;
     /**
      * 图片体积
      */

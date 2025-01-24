@@ -143,6 +143,14 @@ const router = createRouter({
         hideInMenu: true,
       },
     },
+    {
+      path: '/space_analyze',
+      name: '空间分析',
+      component: () => import('../pages/space/SpaceAnalyzePage.vue'),
+      meta: {
+        hideInMenu: true,
+      },
+    },
   ],
 })
 
