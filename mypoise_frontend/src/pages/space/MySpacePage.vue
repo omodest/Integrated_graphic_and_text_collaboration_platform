@@ -9,6 +9,7 @@ import { useLoginUserStore } from '@/stores/user'
 import { listSpaceVoByPageUsingPost } from '@/api/spaceController.ts'
 import { message } from 'ant-design-vue'
 import { onMounted } from 'vue'
+import {SPACE_TYPE_ENUM} from "@/constant/space";
 
 // 页面跳转
 const router = useRouter()
@@ -33,6 +34,7 @@ const checkUserSpace = async () => {
     userId: loginUser.id,
     current: 1,
     pageSize: 1,
+    spaceType: SPACE_TYPE_ENUM.PRIVATE,
   })
   if (res.data.code === 0) {
     // 如果有，则进入第一个空间

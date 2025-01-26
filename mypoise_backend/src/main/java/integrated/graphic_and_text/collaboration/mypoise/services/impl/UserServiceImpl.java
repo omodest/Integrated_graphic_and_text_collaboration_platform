@@ -16,6 +16,7 @@ import integrated.graphic_and_text.collaboration.mypoise.entity.vo.UserInfoVO;
 import integrated.graphic_and_text.collaboration.mypoise.exception.BusinessException;
 import integrated.graphic_and_text.collaboration.mypoise.exception.ErrorCode;
 import integrated.graphic_and_text.collaboration.mypoise.exception.ThrowUtils;
+import integrated.graphic_and_text.collaboration.mypoise.manage.auth.StpKit;
 import integrated.graphic_and_text.collaboration.mypoise.mapper.UserMapper;
 import integrated.graphic_and_text.collaboration.mypoise.services.UserService;
 import integrated.graphic_and_text.collaboration.mypoise.utils.EmailUtils;
@@ -102,6 +103,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         // 4. 存session
         httpServletRequest.getSession().setAttribute(USER_LOGIN_STATE, user);
+        // 记录用户登录态到 Sa-token，便于空间鉴权时使用，注意保证该用户信息与 SpringSession 中的信息过期时间一致
+        StpKit.SPACE.login(user.getId());
+        StpKit.SPACE.getSession().set(UserConstant.USER_LOGIN_STATE, user);
         // 5. 返回给前端的用户信息脱敏
         return getLoginUserVo(user);
     }
@@ -126,6 +130,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("email", email);
         User user = this.getOne(queryWrapper);
         httpServletRequest.getSession().setAttribute(USER_LOGIN_STATE, user);
+        // 记录用户登录态到 Sa-token，便于空间鉴权时使用，注意保证该用户信息与 SpringSession 中的信息过期时间一致
+        StpKit.SPACE.login(user.getId());
+        StpKit.SPACE.getSession().set(UserConstant.USER_LOGIN_STATE, user);
         return user;
     }
 

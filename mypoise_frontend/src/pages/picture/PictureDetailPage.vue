@@ -73,7 +73,7 @@
             <a-button v-if="canEdit" :icon="h(EditOutlined)" type="default" @click="doEdit">
               编辑
             </a-button>
-            <a-button v-if="canEdit" :icon="h(DeleteOutlined)" danger @click="doDelete">
+            <a-button v-if="canDelete" :icon="h(DeleteOutlined)" danger @click="doDelete">
               删除
             </a-button>
           </a-space>
@@ -90,6 +90,7 @@ import { DeleteOutlined, DownloadOutlined, EditOutlined } from '@ant-design/icon
 import { useLoginUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { downloadImage, formatSize,toHexColor } from '@/utils'
+import {SPACE_PERMISSION_ENUM} from "@/constant/space";
 
 interface Props {
   id: string | number
@@ -97,17 +98,7 @@ interface Props {
 const props = defineProps<Props>()
 const picture = ref<API.PictureVO>({})
 const loginUserStore = useLoginUserStore()
-// 是否具有编辑权限 todo 这里可以在详情页面直接添加审核按钮，提供给管理员使用,所以不急
-const canEdit = computed(() => {
-  const loginUser = loginUserStore.loginUser
-  // 未登录不可编辑
-  if (!loginUser.id) {
-    return false
-  }
-  // 仅本人或管理员可编辑
-  const user = picture.value.user || {}
-  return loginUser.id === user.id || loginUser.userRole === 'admin'
-})
+
 // 获取图片详情
 const fetchPictureDetail = async () => {
   try {
@@ -126,6 +117,16 @@ const fetchPictureDetail = async () => {
 onMounted(() => {
   fetchPictureDetail()
 })
+// 通用权限检查函数
+function createPermissionChecker(permission: string) {
+  return computed(() => {
+    return (picture.value.permissionList ?? []).includes(permission)
+  })
+}
+// 定义权限检查
+const canEdit = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
+const canDelete = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
+
 const router = useRouter()
 // 编辑
 const doEdit = () => {

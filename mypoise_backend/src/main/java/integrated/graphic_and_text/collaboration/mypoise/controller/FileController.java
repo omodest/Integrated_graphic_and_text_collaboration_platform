@@ -18,6 +18,8 @@ import integrated.graphic_and_text.collaboration.mypoise.exception.BusinessExcep
 import integrated.graphic_and_text.collaboration.mypoise.exception.ErrorCode;
 import integrated.graphic_and_text.collaboration.mypoise.exception.ThrowUtils;
 import integrated.graphic_and_text.collaboration.mypoise.manage.CosManager;
+import integrated.graphic_and_text.collaboration.mypoise.manage.auth.annotation.SaSpaceCheckPermission;
+import integrated.graphic_and_text.collaboration.mypoise.manage.auth.model.SpaceUserPermissionConstant;
 import integrated.graphic_and_text.collaboration.mypoise.services.FileService;
 import integrated.graphic_and_text.collaboration.mypoise.services.PictureService;
 import integrated.graphic_and_text.collaboration.mypoise.services.UserService;
@@ -132,6 +134,7 @@ public class FileController {
      * @return
      */
     @PostMapping("/upload/picture")
+    @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_UPLOAD)
     public BaseResponse<PictureVO> uploadPicture(@RequestPart("file") MultipartFile multipartFile,
                                                  PictureUploadRequest pictureUploadRequest,
                                                  HttpServletRequest httpServletRequest){
@@ -148,6 +151,7 @@ public class FileController {
      * @return
      */
     @PostMapping("/upload/url")
+    @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_UPLOAD)
     public BaseResponse<PictureVO> uploadPictureByUrl(
             @RequestBody PictureUploadRequest pictureUploadRequest,
             HttpServletRequest request) {

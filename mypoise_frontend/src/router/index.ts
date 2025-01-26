@@ -103,6 +103,16 @@ const router = createRouter({
       },
     },
     {
+      path: '/spaceUserManage/:id',
+      name: '空间成员管理',
+      component: () => import('../pages/admin/SpaceUserManagePage.vue'),
+      props: true,
+      meta: {
+        access: AccessEnum.ADMIN,
+        hideInMenu: true,
+      },
+    },
+    {
       path: '/add_picture',
       name: '创建图片',
       component: () => import('../pages/picture/AddPicturePage.vue'),
