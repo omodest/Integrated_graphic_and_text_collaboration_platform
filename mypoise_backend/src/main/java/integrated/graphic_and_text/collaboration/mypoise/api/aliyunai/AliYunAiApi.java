@@ -12,16 +12,26 @@ import integrated.graphic_and_text.collaboration.mypoise.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+/**
+ * 通过 Hutool 的 HTTP 请求工具类来调用阿里云百炼的 API
+ */
 @Slf4j
 @Component
 public class AliYunAiApi {
-    // 读取配置文件
+
+    /**
+     * 读取配置文件
+     --- 这里是在阿里云AI官网申请的密钥
+     **/
     @Value("${aliYunAi.apiKey}")
     private String apiKey;
+
     // 创建任务地址
     public static final String CREATE_OUT_PAINTING_TASK_URL = "https://dashscope.aliyuncs.com/api/v1/services/aigc/image2image/out-painting";
     // 查询任务状态
     public static final String GET_OUT_PAINTING_TASK_URL = "https://dashscope.aliyuncs.com/api/v1/tasks/%s";
+
     /**
      * 创建任务
      *

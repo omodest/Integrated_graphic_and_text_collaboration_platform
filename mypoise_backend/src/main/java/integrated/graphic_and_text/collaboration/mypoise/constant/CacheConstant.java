@@ -19,7 +19,7 @@ public interface CacheConstant {
                     .build();
 
     /**
-     * 热门标签缓存
+     * 热门标签缓存键
      */
     String HOT_TAGS =  "hot_tags";
 

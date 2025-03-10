@@ -22,7 +22,7 @@ public interface FileConstant {
     long FILE_SIZE_UPLOAD_LIMIT = 1024 * 1024L;
 
     /**
-     * 上传投降的文件类型
+     * 上传图片的文件类型
      */
     List<String> FILE_TYPE_UPLOAD_LIMIT = Arrays.asList("jpeg", "jpg", "svg", "png", "webp");
 

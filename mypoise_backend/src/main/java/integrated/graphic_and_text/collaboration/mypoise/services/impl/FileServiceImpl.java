@@ -149,7 +149,6 @@ public class FileServiceImpl implements FileService {
                     // 设置图片名称，序号连续递增
                     pictureUploadRequest.setPicName(namePrefix + (count + 1));
                 }
-
                 PictureVO pictureVO = pictureService.uploadPicture(fileUrl, pictureUploadRequest, loginUser);
                 log.info("图片上传成功, id = {}", pictureVO.getId());
                 uploadCount++;

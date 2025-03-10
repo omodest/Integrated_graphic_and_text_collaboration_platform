@@ -10,6 +10,7 @@ import java.util.Properties;
 
 /**
  * 图片分表算法
+ *
  * 该类直接在yml配置文件中，通过algorithmClassName引入使用
  */
 public class PictureShardingAlgorithm implements StandardShardingAlgorithm<Long> {

@@ -11,9 +11,11 @@ import java.io.IOException;
 /**
  * 请求包装过滤器
  *
+ *  Hutool的工具类 servletutil从 HttpServletRequest中获取到了参数信息，HttpServletRequest 的 body 值是个流，**只支持读取一次，读完就没了!**
+ *  这里自定义请求包装类和请求包装类过滤器，缓存请求体内容，以便后续多次读取。
  * @author pine
  */
-@Order(1)
+@Order(1) // 设置过滤器优先级
 @Component
 public class HttpRequestWrapperFilter implements Filter {
 
@@ -22,8 +24,9 @@ public class HttpRequestWrapperFilter implements Filter {
         if (request instanceof HttpServletRequest) {
             HttpServletRequest servletRequest = (HttpServletRequest) request;
             String contentType = servletRequest.getHeader(Header.CONTENT_TYPE.getValue());
+            // 判断是否为 JSON 请求
             if (ContentType.JSON.getValue().equals(contentType)) {
-                // 可以再细粒度一些，只有需要进行空间权限校验的接口才需要包一层
+                // 包装请求对象
                 chain.doFilter(new RequestWrapper(servletRequest), response);
             } else {
                 chain.doFilter(request, response);

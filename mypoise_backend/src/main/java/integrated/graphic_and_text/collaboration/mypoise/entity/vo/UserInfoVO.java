@@ -71,5 +71,4 @@ public class UserInfoVO {
      * 更新时间
      */
     private Date updateTime;
-
 }

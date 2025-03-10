@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * 邮箱登录请求
+ */
 @Data
 public class UserEmailLoginRequest implements Serializable {
 

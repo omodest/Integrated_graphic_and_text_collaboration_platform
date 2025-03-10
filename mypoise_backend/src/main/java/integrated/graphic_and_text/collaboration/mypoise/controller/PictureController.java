@@ -62,15 +62,24 @@ public class PictureController {
     @Resource
     private PictureCategoryService pictureCategoryService;
 
+    /**
+     * Redis缓存
+     */
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
     @Resource
     private SpaceService spaceService;
 
+    /**
+     * 阿里云AI
+     */
     @Resource
     private AliYunAiApi aliYunAiApi;
 
+    /**
+     * 空间用户权限
+     */
     @Resource
     private SpaceUserAuthManager spaceUserAuthManager;
 
@@ -296,12 +305,10 @@ public class PictureController {
         pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
 
         // 多级缓存方案
-
         // 1. 构建缓存key
         String queryCondition = JSONUtil.toJsonStr(pictureQueryRequest);
         String hashKey = DigestUtils.md5DigestAsHex(queryCondition.getBytes());
         String cacheKey = "mypoise:listPictureVOByPage:" + hashKey;
-
 
         // 2. 从本地缓存中查询
         String cachedValue = LOCAL_CACHE.getIfPresent(cacheKey);

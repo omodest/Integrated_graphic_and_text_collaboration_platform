@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * 以图搜图请求
+ */
 @Data
 public class SearchPictureByPictureRequest implements Serializable {
 

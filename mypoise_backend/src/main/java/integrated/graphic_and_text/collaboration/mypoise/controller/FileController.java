@@ -94,38 +94,6 @@ public class FileController {
         return ResultUtils.success(FileConstant.COS_HOST + filepath);
     }
 
-
-    /**
-     * 测试文件下载
-     *
-     * @param filepath 文件路径
-     * @param response 响应对象
-     */
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    @GetMapping("/test/download/")
-    public void testDownloadFile(String filepath, HttpServletResponse response) throws IOException {
-        COSObjectInputStream cosObjectInput = null;
-        try {
-            COSObject cosObject = cosManager.getObject(filepath);
-            cosObjectInput = cosObject.getObjectContent();
-            // 处理下载到的流
-            byte[] bytes = IOUtils.toByteArray(cosObjectInput);
-            // 设置响应头
-            response.setContentType("application/octet-stream;charset=UTF-8");
-            response.setHeader("Content-Disposition", "attachment; filename=" + filepath);
-            // 写入响应
-            response.getOutputStream().write(bytes);
-            response.getOutputStream().flush();
-        } catch (Exception e) {
-            log.error("file download error, filepath = " + filepath, e);
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "下载失败");
-        } finally {
-            if (cosObjectInput != null) {
-                cosObjectInput.close();
-            }
-        }
-    }
-
     /**
      * 平台核心功能- 图片上传
      * @param multipartFile 文件
@@ -157,10 +125,18 @@ public class FileController {
             HttpServletRequest request) {
         User loginUser = userService.getCurrentUser(request);
         String fileUrl = pictureUploadRequest.getFileUrl();
+        // URL上传
         PictureVO pictureVO = pictureService.uploadPicture(fileUrl, pictureUploadRequest, loginUser);
         return ResultUtils.success(pictureVO);
     }
 
+
+    /**
+     * 批量获取图片
+     * @param uploadPictureByBatchRequest
+     * @param request
+     * @return
+     */
     @PostMapping("/upload/batch")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Integer> uploadPictureByBatch(
@@ -169,9 +145,40 @@ public class FileController {
     ) {
         ThrowUtils.throwIf(uploadPictureByBatchRequest == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getCurrentUser(request);
+        // 批量获取
         int uploadCount = fileService.uploadPictureByBatch(uploadPictureByBatchRequest, loginUser);
         return ResultUtils.success(uploadCount);
     }
 
 
+    /**
+     * 测试文件下载
+     * 网站上的图片直接请求腾讯云COS保存图片路径下载，这里就不使用这种方式下载
+     * @param filepath 文件路径
+     * @param response 响应对象
+     */
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @GetMapping("/test/download/")
+    public void testDownloadFile(String filepath, HttpServletResponse response) throws IOException {
+        COSObjectInputStream cosObjectInput = null;
+        try {
+            COSObject cosObject = cosManager.getObject(filepath);
+            cosObjectInput = cosObject.getObjectContent();
+            // 处理下载到的流
+            byte[] bytes = IOUtils.toByteArray(cosObjectInput);
+            // 设置响应头
+            response.setContentType("application/octet-stream;charset=UTF-8");
+            response.setHeader("Content-Disposition", "attachment; filename=" + filepath);
+            // 写入响应
+            response.getOutputStream().write(bytes);
+            response.getOutputStream().flush();
+        } catch (Exception e) {
+            log.error("file download error, filepath = " + filepath, e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "下载失败");
+        } finally {
+            if (cosObjectInput != null) {
+                cosObjectInput.close();
+            }
+        }
+    }
 }

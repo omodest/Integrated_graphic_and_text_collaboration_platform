@@ -19,6 +19,7 @@
   </div>
 </template>
 
+
 <script setup lang="ts">
 import {message, UploadProps} from "ant-design-vue";
 import {LoadingOutlined, PlusOutlined} from "@ant-design/icons-vue";

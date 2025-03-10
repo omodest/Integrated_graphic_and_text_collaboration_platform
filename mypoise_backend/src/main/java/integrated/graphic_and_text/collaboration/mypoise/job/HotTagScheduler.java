@@ -3,8 +3,6 @@ package integrated.graphic_and_text.collaboration.mypoise.job;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.PictureTags;
 import integrated.graphic_and_text.collaboration.mypoise.services.PictureTagsService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -26,7 +24,7 @@ public class HotTagScheduler {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
-    @Scheduled(cron = "0/5 * * * * ?")
+    @Scheduled(cron = "0 0 * * * ?")
     public void refreshHotTags() {
         // 1. 查询热门标签
         List<PictureTags> topTags = pictureTagsService.query()

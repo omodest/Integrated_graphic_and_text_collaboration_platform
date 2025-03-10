@@ -4,6 +4,9 @@ package integrated.graphic_and_text.collaboration.mypoise.entity.enums;
 import cn.hutool.core.util.ObjectUtil;
 import lombok.Getter;
 
+/**
+ * 图片审核枚举
+ */
 @Getter
 public enum PictureReviewStatusEnum {
 

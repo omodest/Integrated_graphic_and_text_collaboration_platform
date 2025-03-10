@@ -2,7 +2,9 @@ package integrated.graphic_and_text.collaboration.mypoise.entity.dto.file;
 
 import lombok.Data;
 
-
+/**
+ * 批量获取图片请求
+ */
 @Data
 public class UploadPictureByBatchRequest {
 

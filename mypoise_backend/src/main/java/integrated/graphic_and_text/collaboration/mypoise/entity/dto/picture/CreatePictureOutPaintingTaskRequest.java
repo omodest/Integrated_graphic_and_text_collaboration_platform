@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * AI扩图
+ */
 @Data
 public class CreatePictureOutPaintingTaskRequest implements Serializable {
 

@@ -8,11 +8,6 @@ public interface EmailConstant {
     String EMAIL_HTML_CONTENT_PATH = "email.html";
 
     /**
-     * 电子邮件html支付成功路径
-     */
-    String EMAIL_HTML_PAY_SUCCESS_PATH = "pay.html";
-
-    /**
      * 验证码 缓存键
      */
     String CAPTCHA_CACHE_KEY = "api:captcha:";

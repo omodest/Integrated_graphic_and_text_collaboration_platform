@@ -1,11 +1,8 @@
 package integrated.graphic_and_text.collaboration.mypoise.entity.dto.space;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 提供给用户使用的编辑，仅支持用户修改空间名称

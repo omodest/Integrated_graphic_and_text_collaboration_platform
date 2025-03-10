@@ -4,6 +4,8 @@ import java.awt.*;
 
 /**
  * 工具类：计算颜色相似度
+ *
+ * 理解起来简单，适用于实时的场景---。
  */
 public class ColorSimilarUtils {
 

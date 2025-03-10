@@ -5,6 +5,9 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * 添加用户请求
+ */
 @Data
 public class UserAddRequest implements Serializable {
 

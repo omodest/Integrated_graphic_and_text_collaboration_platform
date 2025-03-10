@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * 以色搜图请求
+ */
 @Data
 public class SearchPictureByColorRequest implements Serializable {
 

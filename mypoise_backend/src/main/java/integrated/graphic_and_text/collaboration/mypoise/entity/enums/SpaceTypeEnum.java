@@ -3,6 +3,9 @@ package integrated.graphic_and_text.collaboration.mypoise.entity.enums;
 import cn.hutool.core.util.ObjectUtil;
 import lombok.Getter;
 
+/**
+ * 空间类型枚举
+ */
 @Getter
 public enum SpaceTypeEnum {
 

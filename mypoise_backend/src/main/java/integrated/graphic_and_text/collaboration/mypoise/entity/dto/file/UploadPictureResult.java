@@ -2,6 +2,9 @@ package integrated.graphic_and_text.collaboration.mypoise.entity.dto.file;
 
 import lombok.Data;
 
+/**
+ * 存放图片编辑后信息
+ */
 @Data
 public class UploadPictureResult {
 

@@ -17,10 +17,12 @@ import java.io.*;
 @Slf4j
 public class RequestWrapper extends HttpServletRequestWrapper {
 
+    // 缓存请求体内容
     private final String body;
 
     public RequestWrapper(HttpServletRequest request) {
         super(request);
+        // 读取请求体并缓存
         StringBuilder stringBuilder = new StringBuilder();
         try (InputStream inputStream = request.getInputStream(); BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
             char[] charBuffer = new char[128];

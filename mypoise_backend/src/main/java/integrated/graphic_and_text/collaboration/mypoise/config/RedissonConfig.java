@@ -22,7 +22,10 @@ public class RedissonConfig {
     // redis默认没有密码; 如果自己没有设置的话可以不用写
 //    private String password;
 
-    // 使用bean注解，spring启动时，会自动创建一个Redissonclient对象
+    /**
+     * 使用bean注解，spring启动时，会自动创建一个 Redissonclient对象
+     * @return
+     */
     @Bean
     public RedissonClient getRedissonClient(){
         // 1. 创建redisson配置对象

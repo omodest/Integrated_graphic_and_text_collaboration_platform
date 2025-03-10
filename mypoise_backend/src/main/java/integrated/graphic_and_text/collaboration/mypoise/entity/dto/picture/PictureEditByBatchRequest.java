@@ -5,6 +5,9 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * 用户批量编辑图片请求
+ */
 @Data
 public class PictureEditByBatchRequest implements Serializable {
 

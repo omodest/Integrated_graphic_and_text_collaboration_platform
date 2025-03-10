@@ -11,6 +11,7 @@ import java.util.List;
 
 @Data
 public class SpaceVO implements Serializable {
+
     /**
      * id
      */
@@ -80,8 +81,6 @@ public class SpaceVO implements Serializable {
      * 权限列表
      */
     private List<String> permissionList = new ArrayList<>();
-
-
 
     private static final long serialVersionUID = 1L;
 

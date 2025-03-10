@@ -22,6 +22,7 @@ import integrated.graphic_and_text.collaboration.mypoise.services.UserService;
 import integrated.graphic_and_text.collaboration.mypoise.utils.EmailUtils;
 import integrated.graphic_and_text.collaboration.mypoise.utils.RedissonLockUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.connection.BitFieldSubCommands;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -183,8 +184,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (!Pattern.matches(EMAIL_PATTERN, email)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "不合法的邮箱地址！");
         }
-
-
         // 2. 验证码校验
         String cacheCaptcha = stringRedisTemplate.opsForValue().get(CAPTCHA_CACHE_KEY + email);
         if (StringUtils.isEmpty(cacheCaptcha)){
@@ -219,7 +218,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
             }
             return user.getId();
-            // 工具类中已经对锁进行乐释放--------
+            // 工具类中已经对锁进行释放--------
         }, "邮箱账号注册失败");
     }
 
@@ -262,7 +261,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public User getCurrentUser(HttpServletRequest httpServletRequest) {
+    public User getCurrentUser(@NotNull HttpServletRequest httpServletRequest) {
         // 尝试从 session中获取当前登录用户
         User user = (User)httpServletRequest.getSession().getAttribute(USER_LOGIN_STATE);
         if (user == null || user.getId() <= 0){

@@ -6,6 +6,9 @@ import org.omg.CORBA.PRIVATE_MEMBER;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * 用户修改请求
+ */
 @Data
 public class UserUpdateRequest implements Serializable {
 

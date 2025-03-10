@@ -16,7 +16,6 @@ import java.util.List;
  */
 @Service
 public class FilePictureUpload extends PictureUploadTemplate {
-
     @Override
     protected void validPicture(Object inputSource) {
         MultipartFile multipartFile = (MultipartFile) inputSource;

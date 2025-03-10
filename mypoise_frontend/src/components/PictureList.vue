@@ -35,6 +35,7 @@
               </template>
             </a-card-meta>
 
+
             <template v-if="showOp" #actions>
               <SearchOutlined @click="(e) => doSearch(picture, e)" />
               <EditOutlined v-if="canEdit" @click="(e) => doEdit(picture, e)" />

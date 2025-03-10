@@ -1,5 +1,4 @@
 package integrated.graphic_and_text.collaboration.mypoise.controller;
-import java.util.Date;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -19,7 +18,6 @@ import integrated.graphic_and_text.collaboration.mypoise.exception.ThrowUtils;
 import integrated.graphic_and_text.collaboration.mypoise.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -130,8 +128,6 @@ public class UserController {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱重复");
             }
         }
-
-
         // 生成验证码
         String captcha = RandomUtil.randomNumbers(6);
         // 发送验证码
@@ -255,6 +251,12 @@ public class UserController {
         return ResultUtils.success(userService.getUserVo(getUser));
     }
 
+    /**
+     * 用户修改自己的信息
+     * @param userInfoVO
+     * @param httpServletRequest
+     * @return
+     */
     @PostMapping("/edit/my/vo")
     @AuthCheck(mustRole = UserConstant.USER_ROLE)
     public BaseResponse<UserInfoVO> userEditMyVo(@RequestBody UserInfoVO userInfoVO, HttpServletRequest httpServletRequest){

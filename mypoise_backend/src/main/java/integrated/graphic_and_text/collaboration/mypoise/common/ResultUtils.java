@@ -12,7 +12,7 @@ public class ResultUtils {
     }
 
     /**
-     * 这里需要不使用泛型T，所以BaseResponse前不需要<T>声明，后面也只需要使用一个占位符
+     * 这里需要不使用泛型T，所以BaseResponse前不需要<T>声明，后面也只需要使用 ?、<> 作为占位符
      */
     public static BaseResponse<?> error(ErrorCode errorCode){
         return new BaseResponse<>(errorCode);

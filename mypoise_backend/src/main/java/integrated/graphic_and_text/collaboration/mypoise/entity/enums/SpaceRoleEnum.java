@@ -7,6 +7,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 空间权限枚举
+ */
 @Getter
 public enum SpaceRoleEnum {
 

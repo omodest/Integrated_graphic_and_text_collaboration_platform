@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * 用户邮箱绑定请求
+ */
 @Data
 public class UserBindRequest implements Serializable {
 

@@ -22,6 +22,10 @@ import java.util.List;
 */
 public interface PictureService extends IService<Picture> {
 
+    /**
+     *  因为使用了模板方法，所以这里的这几个方法就注释掉了；模板方法 /manage/upload/...
+     *
+     */
 //    /**
 //     * 上传图片（数据万象）
 //     * @param multipartFile 上传的文件
@@ -47,18 +51,32 @@ public interface PictureService extends IService<Picture> {
 //     * @param fileUrl
 //     */
 //    void validPicture(String fileUrl);
+    /**
+     * 删除临时文件
+     * @param file 文件
+     */
+//    void deleteTempFile(File file);
+//    /**
+//     * 编辑图片
+//     *
+//     * @param pictureEditRequest
+//     * @param request
+//     */
+//    void editPicture(PictureEditRequest pictureEditRequest, HttpServletRequest request);
+//    /**
+//     * 校验空间图片的权限
+//     *
+//     * @param loginUser
+//     * @param picture
+//     */
+//    void checkPictureAuth(User loginUser, Picture picture);
+
 
     /**
      * 文件校验
      * @param picture
      */
     void validPicture(Picture picture);
-
-    /**
-     * 删除临时文件
-     * @param file 文件
-     */
-    void deleteTempFile(File file);
 
     /**
      * 文件上传（对象存储）
@@ -111,20 +129,7 @@ public interface PictureService extends IService<Picture> {
      * @param loginUser
      */
     void deletePicture(long pictureId, User loginUser);
-    /**
-     * 编辑图片
-     *
-     * @param pictureEditRequest
-     * @param request
-     */
-    void editPicture(PictureEditRequest pictureEditRequest, HttpServletRequest request);
-    /**
-     * 校验空间图片的权限
-     *
-     * @param loginUser
-     * @param picture
-     */
-    void checkPictureAuth(User loginUser, Picture picture);
+
 
     /**
      * 颜色搜索

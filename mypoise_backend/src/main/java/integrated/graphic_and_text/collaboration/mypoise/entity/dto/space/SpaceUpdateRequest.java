@@ -1,14 +1,11 @@
 package integrated.graphic_and_text.collaboration.mypoise.entity.dto.space;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
- * 管理员 管理空间
+ * 管理员 修改空间
  */
 @Data
 public class SpaceUpdateRequest implements Serializable {

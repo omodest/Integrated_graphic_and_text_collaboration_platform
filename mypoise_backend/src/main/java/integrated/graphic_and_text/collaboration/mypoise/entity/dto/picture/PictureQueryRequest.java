@@ -8,6 +8,9 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * 图片查询请求
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class PictureQueryRequest extends PageRequest implements Serializable {

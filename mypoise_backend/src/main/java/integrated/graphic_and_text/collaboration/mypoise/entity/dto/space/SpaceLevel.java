@@ -3,6 +3,9 @@ package integrated.graphic_and_text.collaboration.mypoise.entity.dto.space;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+ * 空间等级
+ */
 @Data
 @AllArgsConstructor
 public class SpaceLevel {

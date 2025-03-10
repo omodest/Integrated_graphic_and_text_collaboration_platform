@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * 使用邮箱修改密码
+ */
 @Data
 public class UserEmailEditPwdRequest implements Serializable {
 

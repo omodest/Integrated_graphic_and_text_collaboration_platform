@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 /**
  * 空间图片分类分析请求
  */
-@EqualsAndHashCode(callSuper = true) // 继承父类方法
+@EqualsAndHashCode(callSuper = true) // 自动生成equals和hashcode方法
 @Data
 public class SpaceCategoryAnalyzeRequest extends SpaceAnalyzeRequest {
 }

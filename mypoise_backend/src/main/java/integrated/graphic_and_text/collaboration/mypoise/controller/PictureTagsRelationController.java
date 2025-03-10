@@ -38,9 +38,6 @@ public class PictureTagsRelationController {
     private UserService userService;
 
     @Resource
-    private PictureService pictureService;
-
-    @Resource
     private PictureTagsService pictureTagsService;
 
     @Resource
@@ -87,7 +84,7 @@ public class PictureTagsRelationController {
     }
 
     /**
-     * 缓存
+     * 热门标签
      * @return
      */
     @GetMapping("/hot")

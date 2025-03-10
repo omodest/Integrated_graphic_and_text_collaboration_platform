@@ -27,7 +27,7 @@ public class UserRoleTask {
     private UserService userService;
 
     /**
-     * 用户的优惠卷过期，定时任务，将user_coupon中的状态修改为 2(已过期)
+     * 定时监测用户权限
      */
     @Scheduled(cron = "0/5 * * * * ?")
     public void couponConfirm() {

@@ -8,6 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * 全局异常处理器，类似一个aop切面，属于一种拦截器
+ */
 @Slf4j
 @RestControllerAdvice // 全局的异常处理类，用于集中处理所有控制器层抛出的异常。
 public class GlobalExceptionHandler {

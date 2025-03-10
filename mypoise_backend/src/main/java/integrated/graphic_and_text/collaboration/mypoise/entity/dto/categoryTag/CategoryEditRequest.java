@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * 分类项编辑
+ */
 @Data
 public class CategoryEditRequest implements Serializable {
 

@@ -25,12 +25,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/space/analyze")
 public class SpaceAnalyzeController {
+
     @Resource
     private UserService userService;
+
     @Resource
     private SpaceAnalyzeService spaceAnalyzeService;
     /**
-     * 获取空间的使用状态 √
+     * 获取空间的使用状态
      *
      * @param spaceUsageAnalyzeRequest
      * @param request
@@ -47,7 +49,7 @@ public class SpaceAnalyzeController {
     }
 
     /**
-     * 获取空间图片分类分析√
+     * 获取空间图片分类分析
      *
      * @param spaceCategoryAnalyzeRequest
      * @param request
@@ -81,7 +83,7 @@ public class SpaceAnalyzeController {
     }
 
     /**
-     * 获取空间图片大小分析√
+     * 获取空间图片大小分析
      *
      * @param spaceSizeAnalyzeRequest
      * @param request

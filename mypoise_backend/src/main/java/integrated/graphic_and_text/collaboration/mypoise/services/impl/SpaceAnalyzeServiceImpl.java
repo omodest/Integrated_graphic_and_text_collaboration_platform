@@ -42,9 +42,6 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space>
     private UserService userService;
 
     @Resource
-    private PictureCategoryService pictureCategoryService;
-
-    @Resource
     private PictureMapper pictureMapper;
 
     @Override

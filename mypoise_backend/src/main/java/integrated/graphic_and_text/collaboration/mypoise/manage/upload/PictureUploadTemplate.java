@@ -29,10 +29,8 @@ import static integrated.graphic_and_text.collaboration.mypoise.constant.FileCon
  */
 @Slf4j
 public abstract class PictureUploadTemplate {
-
     @Resource
     protected CosManager cosManager;
-
 
     /**
      * 模板方法，定义上传流程
@@ -88,12 +86,10 @@ public abstract class PictureUploadTemplate {
             this.deleteTempFile(file);
         }
     }
-
     /**
      * 校验输入源（本地文件或 URL）
      */
     protected abstract void validPicture(Object inputSource);
-
     /**
      * 获取输入源的原始文件名
      */

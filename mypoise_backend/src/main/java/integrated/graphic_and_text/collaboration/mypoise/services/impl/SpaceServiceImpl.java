@@ -54,17 +54,26 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
     @Resource
     private UserService userService;
 
+    /**
+     * 分布式锁
+     */
     @Resource
     private RedissonLockUtils redissonLockUtils;
 
+    /**
+     * 事务
+     */
     @Resource
     private TransactionTemplate transactionTemplate;
 
     @Resource
     private SpaceUserService spaceUserService;
 
-    @Resource
+    /**
+     * 分库分表中间件
+     */
     @Lazy
+    @Resource
     private DynamicShardingManager dynamicShardingManager;
 
     @Override

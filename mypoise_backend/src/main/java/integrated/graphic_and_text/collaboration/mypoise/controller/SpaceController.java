@@ -208,7 +208,7 @@ public class SpaceController {
     }
 
     /**
-     * 获取空间级别列表，便于前端展示
+     * 从枚举类中获取空间级别列表，便于前端展示
      *
      * @return
      */
