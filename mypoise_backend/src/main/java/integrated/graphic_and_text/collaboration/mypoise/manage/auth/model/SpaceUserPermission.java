@@ -5,6 +5,7 @@ import java.io.Serializable;
 
 /**
  * 空间成员权限
+ * （角色实体类）
  */
 @Data
 public class SpaceUserPermission implements Serializable {

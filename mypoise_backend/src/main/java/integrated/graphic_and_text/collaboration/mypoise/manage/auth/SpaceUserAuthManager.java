@@ -32,8 +32,14 @@ public class SpaceUserAuthManager {
     @Resource
     private SpaceUserService spaceUserService;
 
+    /**
+     * 封装了角色列表 和 权限列表的实体类
+     */
     public static final SpaceUserAuthConfig SPACE_USER_AUTH_CONFIG;
 
+    /**
+     * 静态内部类加载配置文件，获取数据，保证角色权限能在初始化时加载
+     */
     static {
         String json = ResourceUtil.readUtf8Str("biz/spaceUserAuthConfig.json");
         SPACE_USER_AUTH_CONFIG = JSONUtil.toBean(json, SpaceUserAuthConfig.class);
@@ -49,11 +55,14 @@ public class SpaceUserAuthManager {
         if (StrUtil.isBlank(spaceUserRole)) {
             return new ArrayList<>();
         }
+
         SpaceUserRole role = SPACE_USER_AUTH_CONFIG.getRoles()
                 .stream()
                 .filter(r -> r.getKey().equals(spaceUserRole))
                 .findFirst()
                 .orElse(null);
+
+        // 没找到权限列表
         if (role == null) {
             return new ArrayList<>();
         }
@@ -72,8 +81,10 @@ public class SpaceUserAuthManager {
         if (loginUser == null) {
             return new ArrayList<>();
         }
+
         // 管理员权限
         List<String> ADMIN_PERMISSIONS = getPermissionsByRole(SpaceRoleEnum.ADMIN.getValue());
+
         // 公共图库
         if (space == null) {
             if (userService.isAdmin(loginUser)) {
@@ -85,17 +96,19 @@ public class SpaceUserAuthManager {
         if (spaceTypeEnum == null) {
             return new ArrayList<>();
         }
+
         // 根据空间获取对应的权限
         switch (spaceTypeEnum) {
+            // 私有空间，仅本人或管理员有所有权限
             case PRIVATE:
-                // 私有空间，仅本人或管理员有所有权限
                 if (space.getUserId().equals(loginUser.getId()) || userService.isAdmin(loginUser)) {
                     return ADMIN_PERMISSIONS;
                 } else {
                     return new ArrayList<>();
                 }
+
+            // 团队空间，查询 SpaceUser 并获取角色和权限
             case TEAM:
-                // 团队空间，查询 SpaceUser 并获取角色和权限
                 SpaceUser spaceUser = spaceUserService.lambdaQuery()
                         .eq(SpaceUser::getSpaceId, space.getId())
                         .eq(SpaceUser::getUserId, loginUser.getId())
@@ -105,6 +118,7 @@ public class SpaceUserAuthManager {
                 } else {
                     return getPermissionsByRole(spaceUser.getSpaceRole());
                 }
+
         }
         return new ArrayList<>();
     }

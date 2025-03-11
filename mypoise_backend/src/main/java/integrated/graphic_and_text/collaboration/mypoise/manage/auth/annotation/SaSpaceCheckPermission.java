@@ -15,10 +15,11 @@ import java.lang.annotation.Target;
  * 空间权限认证：必须具有指定权限才能进入该方法
  * 自定义注解
  */
-@SaCheckPermission(type = StpKit.SPACE_TYPE)
+@SaCheckPermission(type = StpKit.SPACE_TYPE) // 这个注解用于校验“空间权限”。
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface SaSpaceCheckPermission {
+
     /**
      * 需要校验的权限码
      *
@@ -26,6 +27,7 @@ public @interface SaSpaceCheckPermission {
      */
     @AliasFor(annotation = SaCheckPermission.class)
     String[] value() default {};
+
     /**
      * 验证模式：AND | OR，默认AND
      *
@@ -33,6 +35,7 @@ public @interface SaSpaceCheckPermission {
      */
     @AliasFor(annotation = SaCheckPermission.class)
     SaMode mode() default SaMode.AND;
+
     /**
      * 在权限校验不通过时的次要选择，两者只要其一校验成功即可通过校验
      *

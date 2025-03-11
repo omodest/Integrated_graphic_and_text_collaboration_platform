@@ -1,5 +1,7 @@
 package integrated.graphic_and_text.collaboration.mypoise.controller;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import integrated.graphic_and_text.collaboration.mypoise.annotation.AuthCheck;
 import integrated.graphic_and_text.collaboration.mypoise.common.BaseResponse;
@@ -8,6 +10,7 @@ import integrated.graphic_and_text.collaboration.mypoise.common.ResultUtils;
 import integrated.graphic_and_text.collaboration.mypoise.constant.UserConstant;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.space.*;
 import integrated.graphic_and_text.collaboration.mypoise.entity.enums.SpaceLevelEnum;
+import integrated.graphic_and_text.collaboration.mypoise.entity.model.Picture;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.Space;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
 import integrated.graphic_and_text.collaboration.mypoise.entity.vo.SpaceVO;
@@ -15,6 +18,7 @@ import integrated.graphic_and_text.collaboration.mypoise.exception.BusinessExcep
 import integrated.graphic_and_text.collaboration.mypoise.exception.ErrorCode;
 import integrated.graphic_and_text.collaboration.mypoise.exception.ThrowUtils;
 import integrated.graphic_and_text.collaboration.mypoise.manage.auth.SpaceUserAuthManager;
+import integrated.graphic_and_text.collaboration.mypoise.services.PictureService;
 import integrated.graphic_and_text.collaboration.mypoise.services.SpaceService;
 import integrated.graphic_and_text.collaboration.mypoise.services.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +43,9 @@ public class SpaceController {
 
     @Resource
     private SpaceService spaceService;
+
+    @Resource
+    private PictureService pictureService;
 
     @Resource
     private SpaceUserAuthManager spaceUserAuthManager;
@@ -77,6 +84,14 @@ public class SpaceController {
         ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR);
         // 仅本人或者管理员可删除
         spaceService.checkSpaceAuth(oldSpace, loginUser);
+        // 删除空间，空间中所有图片也要删除
+        QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("spaceId", id);
+        List<Picture> list = pictureService.list(queryWrapper);
+        if (ObjectUtil.isNotEmpty(list)){
+            boolean b = pictureService.removeByIds(list);
+            ThrowUtils.throwIf(!b, ErrorCode.OPERATION_ERROR);
+        }
         // 操作数据库
         boolean result = spaceService.removeById(id);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);

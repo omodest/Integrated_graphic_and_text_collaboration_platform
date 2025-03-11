@@ -662,6 +662,11 @@ declare namespace API {
     filepath?: string
   }
 
+  type toOtherSpaceUsingPOSTParams = {
+    /** target */
+    target?: number
+  }
+
   type uploadFileUsingPOSTParams = {
     biz?: string
   }

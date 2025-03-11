@@ -7,7 +7,7 @@ server:
     session:
       cookie:
         max-age: 2592000
-spring:
+spring :
   application:
     name: mypoise_backend
   servlet:

@@ -237,42 +237,42 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 //        }
 //    }
 
-//    @Override
-//    public void editPicture(PictureEditRequest pictureEditRequest, HttpServletRequest request) {
-//        // 在此处将实体类和 DTO 进行转换
-//        Picture picture = new Picture();
-//        BeanUtils.copyProperties(pictureEditRequest, picture);
-//        // 联合分类表
-//        QueryWrapper<PictureCategory> queryWrapper = new QueryWrapper<>();
-//        queryWrapper.eq("categoryName", pictureEditRequest.getCategory());
-//        Long id1 = pictureCategoryService.getOne(queryWrapper).getId();
-//        if (ObjectUtil.isNotEmpty(id1)){
-//            picture.setCategoryId(id1);
-//        }else {
-//            picture.setCategoryId(1L);
-//        }
-//        // 处理标签
-//        List<String> tagIds = pictureEditRequest.getTags();
-//        pictureTagRelationService.handelTags(tagIds, pictureEditRequest.getId(), request);
-//        // 设置编辑时间
-//        picture.setEditTime(new Date());
-//        // 数据校验
-//        this.validPicture(picture);
-//        User loginUser = userService.getCurrentUser(request);
-//        // 判断是否存在
-//        long id = pictureEditRequest.getId();
-//        Picture oldPicture = this.getById(id);
-//        ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
-//        // 校验权限(已经改为使用注解鉴权)
-////        checkPictureAuth(loginUser, oldPicture);
-//        // 管理员自动过审
-//        this.filterReviewParam(picture, loginUser);
-//        // 操作数据库
-//        boolean result = this.updateById(picture);
-//        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-//    }
-//
-//
+    @Override
+    public void editPicture(PictureEditRequest pictureEditRequest, HttpServletRequest request) {
+        // 在此处将实体类和 DTO 进行转换
+        Picture picture = new Picture();
+        BeanUtils.copyProperties(pictureEditRequest, picture);
+        // 联合分类表
+        if (StrUtil.isNotBlank(pictureEditRequest.getCategory())){
+            QueryWrapper<PictureCategory> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("categoryName", pictureEditRequest.getCategory());
+            Long id1 = pictureCategoryService.getOne(queryWrapper).getId();
+            if (ObjectUtil.isNotEmpty(id1)){
+                picture.setCategoryId(id1);
+            }else {
+                picture.setCategoryId(1L);
+            }
+        }
+        // 处理标签
+        List<String> tagIds = pictureEditRequest.getTags();
+        pictureTagRelationService.handelTags(tagIds, pictureEditRequest.getId(), request);
+        // 设置编辑时间
+        picture.setEditTime(new Date());
+        // 数据校验
+        this.validPicture(picture);
+        User loginUser = userService.getCurrentUser(request);
+        // 判断是否存在
+        long id = pictureEditRequest.getId();
+        Picture oldPicture = this.getById(id);
+        ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
+        // 管理员自动过审
+        this.filterReviewParam(picture, loginUser);
+        // 操作数据库
+        boolean result = this.updateById(picture);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+    }
+
+
 //    @Override
 //    public void checkPictureAuth(User loginUser, Picture picture) {
 //        Long spaceId = picture.getSpaceId();
@@ -341,11 +341,6 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             }
 
             Picture oldPicture = this.getById(pictureId);
-            // 仅本人或管理员可编辑(改为使用统一的权限校验)
-//            if (!oldPicture.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
-//                throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
-//            }
-
             // 校验空间是否一致
             // 没传 spaceId，则复用原有图片的 spaceId（这样也兼容了公共图库）
             if (spaceId == null) {
@@ -638,7 +633,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         Picture oldPicture = this.getById(pictureId);
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
         // 校验权限(已经改为使用注解鉴权)
-//        checkPictureAuth(loginUser, oldPicture);
+        // checkPictureAuth(loginUser, oldPicture);
         // 开启事务
         transactionTemplate.execute(status -> {
             // 操作数据库
@@ -739,7 +734,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         Long categoryId = pictureCategoryService.getOne(queryCategory).getId();
         pictureList.forEach(picture -> {
                     if (ObjUtil.isNotEmpty(categoryId)) {
-                        picture.setCategory(categoryId.toString());
+                        picture.setCategoryId(categoryId);
                     }
                 });
         // 批量修改 图片标签表里的指定pictureList的 标签id
@@ -816,8 +811,6 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         Long pictureId = createPictureOutPaintingTaskRequest.getPictureId();
         Picture picture = Optional.ofNullable(this.getById(pictureId))
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图片不存在"));
-        // 校验权限(已经改为使用注解鉴权)
-//        checkPictureAuth(loginUser, picture);
         // 创建扩图任务
         CreateOutPaintingTaskRequest createOutPaintingTaskRequest = new CreateOutPaintingTaskRequest();
         CreateOutPaintingTaskRequest.Input input = new CreateOutPaintingTaskRequest.Input();

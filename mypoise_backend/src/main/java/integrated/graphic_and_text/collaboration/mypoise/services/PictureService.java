@@ -56,13 +56,7 @@ public interface PictureService extends IService<Picture> {
      * @param file 文件
      */
 //    void deleteTempFile(File file);
-//    /**
-//     * 编辑图片
-//     *
-//     * @param pictureEditRequest
-//     * @param request
-//     */
-//    void editPicture(PictureEditRequest pictureEditRequest, HttpServletRequest request);
+
 //    /**
 //     * 校验空间图片的权限
 //     *
@@ -139,6 +133,14 @@ public interface PictureService extends IService<Picture> {
      * @return
      */
     List<PictureVO> searchPictureByColor(Long spaceId, String picColor, User loginUser);
+
+    /**
+     * 编辑图片
+     *
+     * @param pictureEditRequest
+     * @param request
+     */
+    void editPicture(PictureEditRequest pictureEditRequest, HttpServletRequest request);
 
     /**
      * 批量编辑

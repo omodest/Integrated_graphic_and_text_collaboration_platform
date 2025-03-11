@@ -231,9 +231,33 @@ create table if not exists space_user
 ) comment '空间用户关联' collate = utf8mb4_unicode_ci;
 
 
+#RBAC 已有 user（用户表） 、 user_space(用户角色表)，下面三张表时RBAC需要的剩下三张，目前使用配置文件spaceUserAuthConfig.json
 
+# 角色表
+# CREATE TABLE IF NOT EXISTS roles (
+#     id          BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '角色ID',
+#     'key'    VARCHAR(128) NOT NULL UNIQUE COMMENT '角色标识符',
+#     name        VARCHAR(128) NOT NULL COMMENT '角色名称',
+#     description TEXT COMMENT '角色描述'
+# ) COMMENT='角色表' COLLATE = utf8mb4_unicode_ci;
 
+# 权限表
+# CREATE TABLE IF NOT EXISTS permissions (
+#     id          BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '权限ID',
+#     'key' VARCHAR(128) NOT NULL UNIQUE COMMENT '权限标识符',
+#     name        VARCHAR(128) NOT NULL COMMENT '权限名称',
+#     description TEXT COMMENT '权限描述'
+# ) COMMENT='权限表' COLLATE = utf8mb4_unicode_ci;
 
+# 角色权限表
+# CREATE TABLE IF NOT EXISTS role_permissions (
+#    id          BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT 'ID',
+#    role_id       BIGINT NOT NULL COMMENT '角色ID',
+#    permission_id BIGINT NOT NULL COMMENT '权限ID',
+#    PRIMARY KEY (role_id, permission_id),
+#    FOREIGN KEY (role_id) REFERENCES roles(id),
+#    FOREIGN KEY (permission_id) REFERENCES permissions(id)
+# ) COMMENT='角色-权限关联表' COLLATE = utf8mb4_unicode_ci;
 
 
 

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,9 +56,9 @@ public class PictureTagRelationServiceImpl extends ServiceImpl<PictureTagRelatio
         if (hasDifference){
             currentUser = userService.getCurrentUser(httpServletRequest);
             userId = currentUser.getId();
-//            if (currentUser.getUserRole().equals(UserConstant.USER_ROLE) && !userService.isAdmin(currentUser)){
-//                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "普通用户不允许自定义标签");
-//            }
+            if (currentUser.getUserRole().equals(UserConstant.USER_ROLE)){
+                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "会员才能新建标签!!!");
+            }
         }
 
         // 4. 添加数据库记录

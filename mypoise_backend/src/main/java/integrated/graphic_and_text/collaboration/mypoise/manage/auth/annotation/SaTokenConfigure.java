@@ -13,15 +13,16 @@ import javax.annotation.PostConstruct;
  */
 @Configuration
 public class SaTokenConfigure implements WebMvcConfigurer {
-    // 注册 Sa-Token 拦截器，打开注解式鉴权功能
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 注册 Sa-Token 拦截器，打开注解式鉴权功能
         registry.addInterceptor(new SaInterceptor()).addPathPatterns("/**");
     }
+
     @PostConstruct
     public void rewriteSaStrategy() {
-        // 重写Sa-Token的注解处理器，增加注解合并功能
+        // 重写Sa-Token的注解处理器，增加注解合并功能（如果父类和子类都有相同的注解，它会将两者的属性合并。）
         SaAnnotationStrategy.instance.getAnnotation = (element, annotationClass) -> {
             return AnnotatedElementUtils.getMergedAnnotation(element, annotationClass);
         };

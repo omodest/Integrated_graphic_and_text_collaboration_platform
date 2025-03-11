@@ -22,8 +22,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
+
 /**
- * WebSocket 拦截器，建立连接前要先校验
+ * WebSocket握手拦截器，在建立WebSocket连接前对用户权限进行校验，确保用户有权限访问指定的图片资源。
  */
 @Slf4j
 @Component
@@ -53,26 +54,32 @@ public class WsHandshakeInterceptor implements HandshakeInterceptor {
      */
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
+        // 确保请求是Servlet类型
         if (request instanceof ServletServerHttpRequest) {
             HttpServletRequest httpServletRequest = ((ServletServerHttpRequest) request).getServletRequest();
-            // 从请求中获取参数
+
+            // 从请求参数中获取图片ID
             String pictureId = httpServletRequest.getParameter("pictureId");
             if (StrUtil.isBlank(pictureId)) {
                 log.error("缺少图片参数，拒绝握手");
                 return false;
             }
+
             // 获取当前登录用户
             User loginUser = userService.getCurrentUser(httpServletRequest);
             if (ObjUtil.isEmpty(loginUser)) {
                 log.error("用户未登录，拒绝握手");
                 return false;
             }
-            // 校验用户是否有编辑当前图片的权限
+
+            // 查询图片信息，校验图片是否存在
             Picture picture = pictureService.getById(pictureId);
             if (ObjUtil.isEmpty(picture)) {
                 log.error("图片不存在，拒绝握手");
                 return false;
             }
+
+            // 获取图片所在的空间ID
             Long spaceId = picture.getSpaceId();
             Space space = null;
             if (spaceId != null) {
@@ -86,11 +93,14 @@ public class WsHandshakeInterceptor implements HandshakeInterceptor {
                     return false;
                 }
             }
+
+            // 获取用户在该空间的权限列表
             List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
             if (!permissionList.contains(SpaceUserPermissionConstant.PICTURE_EDIT)) {
                 log.error("用户没有编辑图片的权限，拒绝握手");
                 return false;
             }
+
             // 设置用户登录信息等属性到 WebSocket 会话中
             attributes.put("user", loginUser);
             attributes.put("userId", loginUser.getId());

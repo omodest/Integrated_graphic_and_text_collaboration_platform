@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import javax.annotation.Resource;
 /**
- * 图片编辑事件 Disruptor 配置
+ * 图片编辑事件 Disruptor 队列配置
  */
 @Configuration
 public class PictureEditEventDisruptorConfig {

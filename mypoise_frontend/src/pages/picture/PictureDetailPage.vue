@@ -76,6 +76,9 @@
             <a-button v-if="canDelete" :icon="h(DeleteOutlined)" danger @click="doDelete">
               删除
             </a-button>
+            <a-button @click="doAvatar">
+              应用头像
+            </a-button>
           </a-space>
         </a-card>
       </a-col>
@@ -84,7 +87,12 @@
 </template>
 <script setup lang="ts">
 import { computed, h, onMounted, ref } from 'vue'
-import { deletePictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureController.ts'
+import {
+  applyAvatarUsingPost,
+  deletePictureUsingPost,
+  getPictureVoByIdUsingGet,
+  toOtherSpaceUsingPost
+} from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { DeleteOutlined, DownloadOutlined, EditOutlined } from '@ant-design/icons-vue'
 import { useLoginUserStore } from '@/stores/user'
@@ -152,6 +160,18 @@ const doDelete = async () => {
     message.error('删除失败')
   }
 }
+
+// 应用到头像
+const doAvatar = async () => {
+  const res = await applyAvatarUsingPost( picture.value )
+  if (res.data.code === 0) {
+    message.success('切换成功')
+    await router.push("/")
+  } else {
+    message.error('切换失败')
+  }
+}
+
 // 下载图片
 const doDownload = () => {
   downloadImage(picture.value.url)

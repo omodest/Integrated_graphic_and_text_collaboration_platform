@@ -15,7 +15,7 @@ public interface CacheConstant {
             Caffeine.newBuilder().initialCapacity(1024)
                     .maximumSize(10000L)
                     // 缓存 5 分钟移除
-                    .expireAfterWrite(5L, TimeUnit.MINUTES)
+                    .expireAfterWrite(5L, TimeUnit.SECONDS)
                     .build();
 
     /**
