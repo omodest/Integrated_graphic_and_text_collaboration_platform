@@ -329,7 +329,9 @@ public class PictureController {
         if (ObjectUtil.isNotEmpty(picturePage.getRecords())){
             pagePictureVo  = pictureService.getPagePictureVo(picturePage);
         }
-
+        if (picturePage.getRecords().isEmpty()){
+            return ResultUtils.success(pagePictureVo);
+        }
         String cacheValue = JSONUtil.toJsonStr(pagePictureVo);
         LOCAL_CACHE.put(cacheKey, cacheValue);
         // 5 - 10 分钟随机过期，防止雪崩
@@ -409,7 +411,7 @@ public class PictureController {
     }
 
     /**
-     * 将公共图库图片复制到 自己私人空间或团队空间/ 将自己私人空间或团队空间 复制到 公共空间
+     * TODO  将公共图库图片复制到 自己私人空间或团队空间/ 将自己私人空间或团队空间 复制到 公共空间
      * @param picture
      * @param target
      * @return

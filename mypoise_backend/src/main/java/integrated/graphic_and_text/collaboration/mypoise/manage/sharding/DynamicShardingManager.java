@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * 4. 动态创建新的图片分表，并在创建后更新分表配置。
  * 5. 获取 ShardingSphere 的 ContextManager，用于动态调整分片规则。
  */
-@Component
+//@Component
 @Slf4j
 public class DynamicShardingManager {
 

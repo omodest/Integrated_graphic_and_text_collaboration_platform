@@ -1,0 +1,30 @@
+<!--pages/publicAlbum/index.wxml-->
+<view class="public-album">
+  <!-- 搜索框 -->
+  <view class="search-box">
+    <view class="search-input-box">
+      <image class="search-icon" src="/static/images/search.png" />
+      <input
+        class="search-input"
+        placeholder="搜索图片"
+        value="{{searchKeyword}}"
+        confirm-type="search"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
+      />
+      <view class="search-clear" bindtap="clearSearch" wx:if="{{searchKeyword}}">
+        <image class="clear-icon" src="/static/images/clear.png" />
+      </view>
+    </view>
+  </view>
+
+  <water-fall
+    imageList="{{imageList}}"
+    columnCount="{{2}}"
+    bind:imageClick="handleImageClick"
+  />
+  <view class="load-more">
+    <text wx:if="{{loadMoreStatus === 'loading'}}">加载中...</text>
+    <text wx:elif="{{loadMoreStatus === 'noMore'}}">没有更多了</text>
+  </view>
+</view>

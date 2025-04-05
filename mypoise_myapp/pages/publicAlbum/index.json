@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "water-fall": "/components/water-fall/index"
+  },
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+} 

@@ -34,6 +34,12 @@ public interface UserService extends IService<User> {
 //     */
 //    UserInfoVO userLogin();
 
+    //    /**
+//     * 微信扫码注册
+//     * @return
+//     */
+//    Long userRegister();
+
 
     /**
      * 邮箱登录验证
@@ -74,12 +80,6 @@ public interface UserService extends IService<User> {
      * @param captcha 验证码
      */
     void sendEmail(String emailAccount, String captcha) throws MessagingException;
-
-//    /**
-//     * 微信扫码注册
-//     * @return
-//     */
-//    Long userRegister();
 
 
     /**
@@ -134,7 +134,7 @@ public interface UserService extends IService<User> {
 
 
     /**
-     * 简单用户签到
+     * 用户签到
      * @return
      */
     boolean doCurrentDaySign(HttpServletRequest httpServletRequest);
@@ -147,10 +147,18 @@ public interface UserService extends IService<User> {
     Integer getConstantSignDay(HttpServletRequest httpServletRequest);
 
     /**
-     *
+     * 是否为管理员
      * @param user
      * @return
      */
     boolean isAdmin(User user);
+
+
+    /**
+     * 获取SessionID
+     * @param Code
+     * @return
+     */
+    String getSessionId(String Code);
 
 }

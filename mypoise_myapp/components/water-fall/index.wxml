@@ -1,0 +1,29 @@
+<view class="waterfall-container">
+  <view 
+    class="waterfall-column" 
+    wx:for="{{columns}}" 
+    wx:for-item="column"
+    wx:for-index="columnIndex"
+    wx:key="columnIndex"
+  >
+    <view
+      class="waterfall-item"
+      wx:for="{{column}}"
+      wx:for-item="image"
+      wx:for-index="imageIndex"
+      wx:key="id"
+      data-column-index="{{columnIndex}}"
+      data-image-index="{{imageIndex}}"
+      bindtap="handleImageClick"
+    >
+      <image
+        src="{{image.url}}"
+        mode="widthFix"
+        style="height: {{image.height}}rpx"
+      />
+      <view class="image-info" wx:if="{{image.name}}">
+        <text class="title">{{image.name}}</text>
+      </view>
+    </view>
+  </view>
+</view> 

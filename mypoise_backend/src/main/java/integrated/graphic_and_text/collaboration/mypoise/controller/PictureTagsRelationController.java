@@ -65,8 +65,6 @@ public class PictureTagsRelationController {
         // 5. 删除图片标签表记录
         QueryWrapper<PictureTagRelation> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tagId",tagId);
-//        boolean remove = pictureTagRelationService.remove(queryWrapper);
-//        ThrowUtils.throwIf(!b || !remove, ErrorCode.SYSTEM_ERROR);
         return ResultUtils.success(true);
     }
 

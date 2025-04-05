@@ -35,13 +35,13 @@
         </div>
       </a-form-item>
       <!-- 权限过期时间 -->
-      <a-form-item label="权限过期时间">
+      <a-form-item label="VIP过期时间">
         <div v-if="form.vip_expire" class="form-text">
           {{ form.vip_expire.substring(0, 10) }}
           {{ form.vip_expire.substring(11, 19)}}
         </div>
         <div v-else>
-          永久
+          无
         </div>
       </a-form-item>
 

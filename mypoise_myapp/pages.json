@@ -1,0 +1,53 @@
+{
+  "pages": [
+    {
+      "path": "pages/publicAlbum/index",
+      "style": {
+        "navigationBarTitleText": "公共相册"
+      }
+    },
+    {
+      "path": "pages/privateAlbum/index",
+      "style": {
+        "navigationBarTitleText": "私人相册"
+      }
+    },
+    {
+      "path": "pages/mine/index",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    }
+  ],
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#00CC99",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/publicAlbum/index",
+        "text": "公共相册",
+        "iconPath": "static/images/public-album.png",
+        "selectedIconPath": "static/images/public-album-active.png"
+      },
+      {
+        "pagePath": "pages/privateAlbum/index",
+        "text": "私人相册",
+        "iconPath": "static/images/private-album.png",
+        "selectedIconPath": "static/images/private-album-active.png"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "text": "我的",
+        "iconPath": "static/images/mine.png",
+        "selectedIconPath": "static/images/mine-active.png"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "云图库",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  }
+} 

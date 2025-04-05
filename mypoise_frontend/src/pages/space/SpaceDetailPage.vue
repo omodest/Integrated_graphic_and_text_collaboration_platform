@@ -15,7 +15,7 @@
           + 创建图片
         </a-button>
         <a-button
-          v-if="canManageSpaceUser"
+          v-if="needHiddenUserManage"
           type="primary"
           ghost
           :icon="h(TeamOutlined)"
@@ -125,12 +125,21 @@ function createPermissionChecker(permission: string) {
     return (space.value.permissionList ?? []).includes(permission)
   })
 }
+
+function hiddenUserManage(permission: string) {
+  console.log(space.value.spaceType)
+  return computed(() => {
+    console.log(space.value.spaceType)
+    return (space.value.permissionList ?? []).includes(permission) && space.value.spaceType === 1
+  })
+}
 // 定义权限检查
 const canManageSpaceUser = createPermissionChecker(SPACE_PERMISSION_ENUM.SPACE_USER_MANAGE)
 const canUploadPicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_UPLOAD)
 const canEditPicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
 const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
 
+const needHiddenUserManage = hiddenUserManage(SPACE_PERMISSION_ENUM.SPACE_USER_MANAGE)
 
 // 空间 id 改变时，必须重新获取数据
 watch(
@@ -144,7 +153,6 @@ watch(
 // 1. -------- 获取空间详情 --------
 const fetchSpaceDetail = async () => {
   try {
-    console.log(props.id)
     const res = await getSpaceVoByIdUsingGet({
       id: props.id,
     } as API.getSpaceByIdUsingGETParams)

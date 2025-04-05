@@ -146,6 +146,7 @@ const fetchData = async () => {
   const params = {
     ...searchParams,
     tags: [] as string[],
+    // spaceId: 0
   }
   // 如果不是全部，就表示需要筛选了
   if (selectedCategory.value !== 'all') {

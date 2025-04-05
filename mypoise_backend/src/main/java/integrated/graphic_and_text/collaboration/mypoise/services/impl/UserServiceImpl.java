@@ -347,20 +347,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 5. 写redis操作
         Boolean result = stringRedisTemplate.opsForValue().setBit(key, dayOfMonth - 1, true);
         ThrowUtils.throwIf(Boolean.TRUE.equals(result),ErrorCode.OPERATION_ERROR,"今日已签到");
-        // 6. 签到的奖励可以写到这里, 目前系统设计的是连续签到七天 获得1天会员;连续签到30天送 5天会员
+        // 6. 签到的奖励可以写到这里, 目前系统设计的是连续签到七天 获得1天会员;  连续签到30天送 5天会员
         // 获取当前日期和时间
         Date currentDate = new Date();
         Integer constantSignDay = this.getConstantSignDay(httpServletRequest);
         // 使用 Calendar 增加时间
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentDate);
-        if (constantSignDay != 0 && constantSignDay % 7 == 0){
+        if (constantSignDay != 0 && constantSignDay == 1){
             calendar.add(Calendar.DAY_OF_MONTH, 1); // 增加 5 天
             loginUser.setVip_expire(calendar.getTime());
+            loginUser.setUserRole(UserConstant.VIP_ROLE);
         }
         if (constantSignDay != 0 && constantSignDay % 30 == 0){
             calendar.add(Calendar.DAY_OF_MONTH, 5); // 增加 5 天
             loginUser.setVip_expire(calendar.getTime());
+            loginUser.setUserRole(UserConstant.VIP_ROLE);
         }
         loginUser.setUserRole(loginUser.getUserRole());
         loginUser.setEditTime(currentDate);
@@ -411,6 +413,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public boolean isAdmin(User user) {
         return user != null && UserRoleEnum.ADMIN.getValue().equals(user.getUserRole());
+    }
+
+    @Override
+    public String getSessionId(String Code) {
+        return null;
     }
 }
 

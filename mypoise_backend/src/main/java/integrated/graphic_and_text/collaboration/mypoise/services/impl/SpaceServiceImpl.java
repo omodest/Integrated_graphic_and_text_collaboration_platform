@@ -72,9 +72,9 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
     /**
      * 分库分表中间件
      */
-    @Lazy
-    @Resource
-    private DynamicShardingManager dynamicShardingManager;
+//    @Lazy
+//    @Resource
+//    private DynamicShardingManager dynamicShardingManager;
 
     @Override
     public long addSpace(SpaceAddRequest spaceAddRequest, User loginUser) {
@@ -126,7 +126,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
                     ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "创建团队成员记录失败");
                 }
                 // 创建分表（仅对团队空间生效）为方便部署
-                dynamicShardingManager.createSpacePictureTable(space);
+//                dynamicShardingManager.createSpacePictureTable(space);
                 // 返回新写入的数据 id
                 return space.getId();
             });

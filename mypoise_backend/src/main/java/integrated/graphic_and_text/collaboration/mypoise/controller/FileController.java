@@ -12,6 +12,7 @@ import integrated.graphic_and_text.collaboration.mypoise.entity.dto.file.UploadP
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.picture.PictureUploadRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.dto.file.UploadFileRequest;
 import integrated.graphic_and_text.collaboration.mypoise.entity.enums.FileUploadBizEnum;
+import integrated.graphic_and_text.collaboration.mypoise.entity.model.Picture;
 import integrated.graphic_and_text.collaboration.mypoise.entity.model.User;
 import integrated.graphic_and_text.collaboration.mypoise.entity.vo.PictureVO;
 import integrated.graphic_and_text.collaboration.mypoise.exception.BusinessException;

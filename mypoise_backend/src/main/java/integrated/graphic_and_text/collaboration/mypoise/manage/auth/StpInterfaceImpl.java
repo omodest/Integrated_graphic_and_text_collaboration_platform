@@ -212,7 +212,6 @@ public class StpInterfaceImpl implements StpInterface {
         }
         return authRequest;
     }
-
     /**
      * 判断对象的所有字段是否为空
      *
@@ -220,16 +219,19 @@ public class StpInterfaceImpl implements StpInterface {
      * @return
      */
     private boolean isAllFieldsNull(Object object) {
-
         if (object == null) {
             return true; // 对象本身为空
         }
-
         // 获取所有字段并判断是否所有字段都为空
         return Arrays.stream(ReflectUtil.getFields(object.getClass()))
                 // 获取字段值
                 .map(field -> ReflectUtil.getFieldValue(object, field))
                 // 检查是否所有字段都为空
                 .allMatch(ObjectUtil::isEmpty);
+    }
+
+    @Override
+    public List<String> getRoleList(Object loginId, String loginType) {
+        return new ArrayList<>();
     }
 }
