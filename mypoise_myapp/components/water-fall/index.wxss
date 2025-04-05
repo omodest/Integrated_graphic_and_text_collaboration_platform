@@ -8,21 +8,76 @@
 .waterfall-column {
   flex: 1;
   padding: 0 10rpx;
+  width: 50%; /* 确保每列占50%宽度 */
+  box-sizing: border-box;
 }
 
-.waterfall-item {
+/* 卡片样式 */
+.card {
   margin-bottom: 20rpx;
   border-radius: 12rpx;
-  overflow: hidden;
   background-color: #fff;
   box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
-  position: relative;
+  overflow: hidden;
+  width: 100%; /* 确保卡片占满列宽 */
 }
 
-.waterfall-item image {
+/* 卡片图片区域 */
+.card-image {
+  width: 100%;
+  position: relative;
+  background-color: #f0f0f0;
+}
+
+.card-image image {
   width: 100%;
   display: block;
-  background-color: #f0f0f0; /* 图片加载前的背景色 */
+  vertical-align: bottom; /* 避免图片底部间隙 */
+}
+
+/* 卡片内容区域 */
+.card-content {
+  padding: 16rpx;
+}
+
+/* 卡片标题 */
+.card-title {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 12rpx;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1; /* 标题单行显示 */
+  -webkit-box-orient: vertical;
+}
+
+/* 卡片信息区域 */
+.card-info {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+
+.info-item:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  color: #999;
+  margin-right: 8rpx;
+  min-width: 70rpx; /* 保持标签宽度一致 */
+}
+
+.value {
+  color: #666;
 }
 
 .image-info {

@@ -53,6 +53,6 @@ Component({
       const { columnIndex, imageIndex } = e.currentTarget.dataset;
       const item = this.data.columns[columnIndex][imageIndex];
       this.triggerEvent('imageClick', item);
-    }
+    },
   }
 }); 

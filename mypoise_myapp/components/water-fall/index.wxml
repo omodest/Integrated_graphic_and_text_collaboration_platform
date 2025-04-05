@@ -1,3 +1,13 @@
+<!-- 在 WXML 文件顶部添加 -->
+<wxs module="format">
+  function toFixedKB(bytes) {
+    if (!bytes) return '0KB';
+    return (bytes / 1024).toFixed(1) + 'KB';
+  }
+  module.exports = {
+    toFixedKB: toFixedKB
+  };
+</wxs>
 <view class="waterfall-container">
   <view 
     class="waterfall-column" 
@@ -6,8 +16,9 @@
     wx:for-index="columnIndex"
     wx:key="columnIndex"
   >
+    <!-- 图片卡片 -->
     <view
-      class="waterfall-item"
+      class="card"
       wx:for="{{column}}"
       wx:for-item="image"
       wx:for-index="imageIndex"
@@ -16,13 +27,35 @@
       data-image-index="{{imageIndex}}"
       bindtap="handleImageClick"
     >
-      <image
-        src="{{image.url}}"
-        mode="widthFix"
-        style="height: {{image.height}}rpx"
-      />
-      <view class="image-info" wx:if="{{image.name}}">
-        <text class="title">{{image.name}}</text>
+      <!-- 卡片图片区域 -->
+      <view class="card-image">
+        <image
+          src="{{image.url}}"
+          mode="widthFix"
+          style="height: {{image.height}}rpx"
+        />
+      </view>
+      
+      <!-- 卡片信息区域 -->
+      <view class="card-content">
+        <!-- 标题 -->
+        <view class="card-title" wx:if="{{image.name}}">名称: {{image.name}}</view>
+        
+        <!-- 图片信息 -->
+        <view class="card-info">
+          <view class="info-item" wx:if="{{image.category}}">
+            <text class="label">分类：</text>
+            <text class="value">{{image.category}}</text>
+          </view>
+          <view class="info-item" wx:if="{{image.picSize}}">
+            <text class="label">大小：</text>
+            <text class="value">{{format.toFixedKB(image.picSize)}}</text>
+          </view>
+          <view class="info-item" wx:if="{{image.picWidth && image.picHeight}}">
+            <text class="label">尺寸：</text>
+            <text class="value">{{image.picWidth}} × {{image.picHeight}}</text>
+          </view>
+        </view>
       </view>
     </view>
   </view>
