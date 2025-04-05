@@ -2,7 +2,8 @@
   "pages": [
     "pages/publicAlbum/index",
     "pages/privateAlbum/index",
-    "pages/mine/index"
+    "pages/mine/index",
+    "pages/register/index"
   ],
   "window": {
     "backgroundTextStyle": "light",

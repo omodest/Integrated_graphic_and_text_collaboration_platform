@@ -6,7 +6,7 @@
       <image class="search-icon" src="/static/images/search.png" />
       <input
         class="search-input"
-        placeholder="搜索图片"
+        placeholder="搜索图片" 
         value="{{searchKeyword}}"
         confirm-type="search"
         bindinput="onSearchInput"
@@ -18,7 +18,7 @@
     </view>
   </view>
 
-  <water-fall
+  <water-fall 
     imageList="{{imageList}}"
     columnCount="{{2}}"
     bind:imageClick="handleImageClick"

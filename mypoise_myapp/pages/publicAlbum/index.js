@@ -88,7 +88,6 @@ Page({
     }
 
     try {
-      console.log(this.data.searchKeyword)
       const res = await request({
         url: '/api/picture/list/page/vo',
         method: 'POST',
@@ -101,7 +100,6 @@ Page({
           searchText: this.data.searchKeyword || undefined, // 搜索关键词
         }
       });
-      console.log(res.data)
       const responseData = res.data;
       if (responseData.code === 0 && responseData.data) {
         const { records, total } = responseData.data;

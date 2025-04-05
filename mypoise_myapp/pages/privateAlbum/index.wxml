@@ -1,2 +1,24 @@
-<!--pages/privateAlbum/index.wxml-->
-<text>pages/privateAlbum/index.wxml</text>
+<view class="private-space-container">
+  <!-- 空状态显示 -->
+  <view class="empty-state" wx:if="{{!hasPrivateSpace}}">
+    <text class="empty-state-text">您还没有创建私人空间</text>
+    <button class="create-btn" bindtap="createPrivateSpace">创建私人空间</button>
+  </view>
+
+  <!-- 私人空间列表 -->
+  <view class="space-list" wx:else>
+    <view class="space-item" wx:for="{{spaceList}}" wx:key="id">
+      <view class="space-name">{{item.spaceName}}</view>
+      <view class="space-info">
+        <view class="space-stat">
+          <text class="stat-label">图片数量：</text>
+          <text>{{item.totalCount}}/{{item.maxCount}}</text>
+        </view>
+        <view class="space-stat">
+          <text class="stat-label">空间大小：</text>
+          <text>{{item.totalSize/1024/1024}}MB/{{item.maxSize/1024/1024}}MB</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view> 

@@ -1,2 +1,88 @@
-<!--pages/mine/index.wxml-->
-<text>pages/mine/index.wxml</text>
+<view class="container">
+  <!-- 未登录状态 -->
+  <view class="login-container" wx:if="{{!isLogin}}">
+    <view class="login-header">
+      <image class="logo" src="/static/images/logo.png" mode="aspectFit"></image>
+      <text class="welcome">欢迎登录</text>
+      <text class="subtitle">图文协作平台</text>
+    </view>
+
+    <view class="login-form">
+      <view class="form-item">
+        <view class="input-label">账号</view>
+        <input 
+          class="input" 
+          type="text" 
+          placeholder="请输入账号" 
+          placeholder-class="placeholder"
+          value="{{userAccount}}"
+          bindinput="onAccountInput"
+        />
+      </view>
+
+      <view class="form-item">
+        <view class="input-label">密码</view>
+        <input 
+          class="input" 
+          type="password" 
+          placeholder="请输入密码" 
+          placeholder-class="placeholder"
+          value="{{password}}"
+          bindinput="onPasswordInput"
+        />
+      </view>
+
+      <button class="login-btn {{canLogin ? '' : 'disabled'}}" bindtap="handleLogin" disabled="{{!canLogin}}">
+        登录
+      </button>
+
+      <view class="register-tips">
+        还没有账号？
+        <text class="register-link" bindtap="goToRegister">立即注册</text>
+      </view>
+    </view>
+
+    <view class="login-footer">
+      <text class="agreement-text">登录即表示同意</text>
+      <text class="agreement-link" bindtap="handleUserAgreement">《用户协议》</text>
+      <text class="agreement-text">和</text>
+      <text class="agreement-link" bindtap="handlePrivacyPolicy">《隐私政策》</text>
+    </view>
+  </view>
+
+  <!-- 已登录状态 - 用户信息展示 -->
+  <view class="user-container" wx:else>
+    <view class="user-header">
+      <image class="user-avatar" src="{{userInfo.userAvatar || '/static/images/default-avatar.png'}}" mode="aspectFill"></image>
+      <view class="user-info">
+        <text class="user-name">{{userInfo.userName || userInfo.userAccount}}</text>
+        <text class="user-role">{{userInfo.userRole || 'user'}}</text>
+      </view>
+    </view>
+
+    <view class="info-card">
+      <view class="info-item">
+        <text class="info-label">账号</text>
+        <text class="info-value">{{userInfo.userAccount}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">邮箱</text>
+        <text class="info-value">{{userInfo.email || '未绑定'}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">性别</text>
+        <text class="info-value">{{userInfo.gender || '未设置'}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">简介</text>
+        <text class="info-value">{{userInfo.userProfile || '这个人很懒，什么都没写~'}}</text>
+      </view>
+      <view class="info-item" wx:if="{{userInfo.userRole === 'vip' || userInfo.userRole === 'f_vip'}}">
+        <text class="info-label">会员到期</text>
+        <text class="info-value">{{userInfo.vip_expire || '永久'}}</text>
+      </view>
+    </view>
+
+    <button class="logout-btn" bindtap="handleLogout">退出登录</button>
+  </view>
+</view> 
