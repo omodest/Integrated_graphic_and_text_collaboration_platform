@@ -1,24 +1,41 @@
-<view class="private-space-container">
-  <!-- 空状态显示 -->
-  <view class="empty-state" wx:if="{{!hasPrivateSpace}}">
-    <text class="empty-state-text">您还没有创建私人空间</text>
-    <button class="create-btn" bindtap="createPrivateSpace">创建私人空间</button>
+<view class="private-album">
+  <!-- 未登录状态 -->
+  <view class="no-login" wx:if="{{!isLogin}}">
+    <image class="login-icon" src="/static/images/login-needed.png" mode="aspectFit"></image>
+    <view class="login-tip">请先登录后查看私人相册</view>
+    <button class="login-btn" bindtap="goToLogin">去登录</button>
   </view>
 
-  <!-- 私人空间列表 -->
-  <view class="space-list" wx:else>
-    <view class="space-item" wx:for="{{spaceList}}" wx:key="id">
-      <view class="space-name">{{item.spaceName}}</view>
-      <view class="space-info">
-        <view class="space-stat">
-          <text class="stat-label">图片数量：</text>
-          <text>{{item.totalCount}}/{{item.maxCount}}</text>
-        </view>
-        <view class="space-stat">
-          <text class="stat-label">空间大小：</text>
-          <text>{{item.totalSize/1024/1024}}MB/{{item.maxSize/1024/1024}}MB</text>
+  <!-- 已登录但没有私人空间 -->
+  <view class="no-space" wx:elif="{{!hasPrivateSpace}}">
+    <image class="space-icon" src="/static/images/no-space.png" mode="aspectFit"></image>
+    <view class="space-tip">您还没有创建私人空间</view>
+    <button class="create-btn" bindtap="createPrivateSpace">开通私人空间</button>
+  </view>
+
+  <!-- 已有私人空间，显示图片列表 -->
+  <view class="picture-list" wx:else>
+    <view class="waterfall">
+      <view class="picture-item" wx:for="{{pictures}}" wx:key="id">
+        <image 
+          class="picture" 
+          src="{{item.url}}" 
+          mode="widthFix"
+          data-url="{{item.url}}"
+          bindtap="previewImage"
+        ></image>
+        <view class="picture-info">
+          <view class="picture-title" wx:if="{{item.title}}">{{item.title}}</view>
+          <view class="picture-tags" wx:if="{{item.tagNames && item.tagNames.length > 0}}">
+            <text class="tag" wx:for="{{item.tagNames}}" wx:key="*this" wx:for-item="tag">{{tag}}</text>
+          </view>
+          <view class="picture-category" wx:if="{{item.category}}">{{item.category}}</view>
         </view>
       </view>
     </view>
+    
+    <!-- 加载状态 -->
+    <view class="loading" wx:if="{{loading}}">正在加载...</view>
+    <view class="no-more" wx:if="{{!loading && !hasMore}}">没有更多了</view>
   </view>
 </view> 

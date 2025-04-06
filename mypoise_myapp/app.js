@@ -2,7 +2,7 @@ App({
   globalData: {
     userInfo: null,
     isLogin: false,
-    baseUrl: 'http://your-api-domain.com'  // 替换为你的API域名
+    baseUrl: 'http://localhost:8101'  // 替换为你的API域名
   },
 
   onLaunch() {
@@ -75,5 +75,24 @@ App({
       return this.checkLoginStatus();
     }
     return this.globalData.isLogin;
+  },
+
+  // 保存用户信息到全局
+  setUserInfo(userInfo) {
+    if (userInfo) {
+      this.globalData.userInfo = userInfo;
+      this.globalData.isLogin = true;
+      console.log('全局用户信息已更新:', this.globalData);
+    }
+  },
+
+  // 获取用户信息
+  getUserInfo() {
+    return this.globalData.userInfo;
+  },
+
+  // 检查是否登录
+  isLoggedIn() {
+    return this.globalData.isLogin && this.globalData.userInfo != null;
   }
 }) 

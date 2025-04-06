@@ -81,25 +81,21 @@ Page({
 
       if (res.data.code === 0) {
         const userInfo = res.data.data;
+        console.log('登录成功，用户信息：', userInfo);
         
-        // 使用全局方法保存用户信息
-        if (app.saveUserInfo(userInfo)) {
-          // 更新页面状态
-          this.setData({
-            isLogin: true,
-            userInfo: userInfo
-          });
+        // 保存到全局
+        app.setUserInfo(userInfo);
+        
+        // 更新页面状态
+        this.setData({
+          isLogin: true,
+          userInfo: userInfo
+        });
 
-          wx.showToast({
-            title: '登录成功',
-            icon: 'success'
-          });
-        } else {
-          wx.showToast({
-            title: '登录信息保存失败',
-            icon: 'none'
-          });
-        }
+        wx.showToast({
+          title: '登录成功',
+          icon: 'success'
+        });
       } else {
         wx.showToast({
           title: res.data.message || '登录失败',
@@ -122,27 +118,22 @@ Page({
       content: '确定要退出登录吗？',
       success: (res) => {
         if (res.confirm) {
-          // 使用全局方法清除用户信息
-          if (app.clearUserInfo()) {
-            // 更新页面状态
-            this.setData({
-              isLogin: false,
-              userInfo: null,
-              userAccount: '',
-              password: '',
-              canLogin: false
-            });
+          // 清除全局用户信息
+          app.clearUserInfo();
+          
+          // 更新页面状态
+          this.setData({
+            isLogin: false,
+            userInfo: null,
+            userAccount: '',
+            password: '',
+            canLogin: false
+          });
 
-            wx.showToast({
-              title: '已退出登录',
-              icon: 'success'
-            });
-          } else {
-            wx.showToast({
-              title: '退出登录失败',
-              icon: 'none'
-            });
-          }
+          wx.showToast({
+            title: '已退出登录',
+            icon: 'success'
+          });
         }
       }
     });
