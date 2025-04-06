@@ -81,7 +81,8 @@ Page({
         data: {
           current: 1,
           pageSize: 1,
-          spaceType: 0
+          spaceType: 0,
+          userId: app.getUserInfo().id
         }
       });
 
@@ -294,7 +295,6 @@ Page({
     const isJpgOrPng = file.tempFilePath.endsWith('.jpg') || 
                        file.tempFilePath.endsWith('.jpeg') || 
                        file.tempFilePath.endsWith('.png');
-    
     if (!isJpgOrPng) {
       wx.showToast({
         title: '不支持上传该格式的图片，推荐 jpg 或 png',
@@ -302,7 +302,7 @@ Page({
       });
       return false;
     }
-    
+    console.log(this.data.spaceId)
     // 检查文件大小
     const isLt2M = file.size / 1024 / 1024 < 2;
     if (!isLt2M) {
@@ -327,16 +327,26 @@ Page({
     });
 
     try {
-      const uploadTask = wx.uploadFile({
-        url: app.globalData.baseUrl + '/api/picture/upload/picture',
+      const userInfo = app.getUserInfo();
+      if (!userInfo || !userInfo.id) {
+        throw new Error('用户未登录');
+      }
+
+      // 构建上传参数
+      const formData = {
+        spaceId: this.data.spaceId,
+        userId: app.getUserInfo().id,
+        picName: file.tempFilePath.split('/').pop() // 使用文件名作为图片名称
+      };
+      console.log("哈哈")
+      wx.uploadFile({
+        url: 'http://localhost:8101/api/wechat/upload/picture',
         filePath: file.tempFilePath,
-        name: 'file',
-        formData: {
-          spaceId: this.data.spaceId
-        },
+        name: 'file', // 后端接口使用 @RequestPart("file") 接收文件
+        formData: formData,
+        
         header: {
-          'content-type': 'multipart/form-data',
-          'Authorization': app.globalData.token || ''
+          'content-type': 'multipart/form-data'
         },
         success: (res) => {
           console.log('上传图片成功:', res);
@@ -358,6 +368,7 @@ Page({
               });
             }
           } catch (e) {
+            console.error('解析响应失败:', e);
             wx.showToast({
               title: '解析响应失败',
               icon: 'none'
@@ -375,11 +386,6 @@ Page({
           wx.hideLoading();
           this.setData({ uploading: false });
         }
-      });
-
-      // 监听上传进度
-      uploadTask.onProgressUpdate((res) => {
-        console.log('上传进度:', res.progress);
       });
     } catch (error) {
       console.error('上传图片失败:', error);

@@ -85,7 +85,8 @@ Page({
         
         // 保存到全局
         app.setUserInfo(userInfo);
-        
+        // uni.setStorageSync("user", res.data)
+        // console.log(uni.getStorageSync('openid'))
         // 更新页面状态
         this.setData({
           isLogin: true,

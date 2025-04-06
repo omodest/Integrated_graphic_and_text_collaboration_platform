@@ -232,7 +232,7 @@ public class PictureController {
             // 普通用户默认只能看到审核通过的数据
             pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
             pictureQueryRequest.setNullSpaceId(true);
-        } else if (pictureQueryRequest.getName().equals("小程序直通参数")){
+        } else if (StrUtil.isNotEmpty(pictureQueryRequest.getName()) && pictureQueryRequest.getName().equals("小程序直通参数")){
                 pictureQueryRequest.setName(null);
         }else {
             boolean hasPermission = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
