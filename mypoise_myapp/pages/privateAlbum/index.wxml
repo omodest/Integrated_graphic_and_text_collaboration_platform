@@ -1,41 +1,58 @@
-<view class="private-album">
+<view class="container">
   <!-- 未登录状态 -->
-  <view class="no-login" wx:if="{{!isLogin}}">
-    <image class="login-icon" src="/static/images/login-needed.png" mode="aspectFit"></image>
-    <view class="login-tip">请先登录后查看私人相册</view>
+  <view class="not-login" wx:if="{{!isLogin}}">
+    <view class="login-tip">登录后即可使用私人相册功能</view>
     <button class="login-btn" bindtap="goToLogin">去登录</button>
   </view>
 
-  <!-- 已登录但没有私人空间 -->
+  <!-- 已登录但无私人空间 -->
   <view class="no-space" wx:elif="{{!hasPrivateSpace}}">
-    <image class="space-icon" src="/static/images/no-space.png" mode="aspectFit"></image>
-    <view class="space-tip">您还没有创建私人空间</view>
-    <button class="create-btn" bindtap="createPrivateSpace">开通私人空间</button>
+    <view class="create-tip">创建私人空间，开始上传您的照片</view>
+    <button class="create-btn" bindtap="createPrivateSpace">创建私人空间</button>
   </view>
 
-  <!-- 已有私人空间，显示图片列表 -->
-  <view class="picture-list" wx:else>
-    <view class="waterfall">
-      <view class="picture-item" wx:for="{{pictures}}" wx:key="id">
-        <image 
-          class="picture" 
-          src="{{item.url}}" 
-          mode="widthFix"
-          data-url="{{item.url}}"
-          bindtap="previewImage"
-        ></image>
+  <!-- 已登录且有私人空间 -->
+  <view class="album-container" wx:else>
+    <!-- 轮播图组件 -->
+    <view class="swiper-container" wx:if="{{featuredPictures.length > 0}}">
+      <swiper class="swiper" indicator-dots="{{true}}" autoplay="{{true}}" interval="{{3000}}" duration="{{500}}" circular="{{true}}">
+        <block wx:for="{{featuredPictures}}" wx:key="id">
+          <swiper-item>
+            <image src="{{item.url}}" mode="aspectFill" class="swiper-image" bindtap="previewImage" data-url="{{item.url}}"></image>
+          </swiper-item>
+        </block>
+      </swiper>
+    </view>
+    
+    <!-- 上传按钮 -->
+    <view class="upload-section">
+      <button class="upload-btn" bindtap="chooseImage">上传图片</button>
+    </view>
+
+    <!-- 图片列表 -->
+    <view class="picture-list">
+      <view class="picture-item" wx:for="{{pictures}}" wx:key="id" bindtap="previewImage" data-url="{{item.url}}">
+        <image src="{{item.url}}" mode="aspectFill" class="picture-image"></image>
         <view class="picture-info">
           <view class="picture-title" wx:if="{{item.title}}">{{item.title}}</view>
           <view class="picture-tags" wx:if="{{item.tagNames && item.tagNames.length > 0}}">
             <text class="tag" wx:for="{{item.tagNames}}" wx:key="*this" wx:for-item="tag">{{tag}}</text>
           </view>
           <view class="picture-category" wx:if="{{item.category}}">{{item.category}}</view>
+          <text class="picture-time">{{item.createTime || '未知时间'}}</text>
         </view>
       </view>
     </view>
-    
-    <!-- 加载状态 -->
-    <view class="loading" wx:if="{{loading}}">正在加载...</view>
-    <view class="no-more" wx:if="{{!loading && !hasMore}}">没有更多了</view>
+
+    <!-- 加载更多 -->
+    <view class="loading-more" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+    <view class="no-more" wx:if="{{!hasMore && pictures.length > 0}}">
+      <text>没有更多图片了</text>
+    </view>
+    <view class="empty-tip" wx:if="{{!loading && pictures.length === 0}}">
+      <text>暂无图片，请上传</text>
+    </view>
   </view>
 </view> 

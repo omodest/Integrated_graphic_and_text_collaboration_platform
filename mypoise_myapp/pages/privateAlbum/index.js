@@ -7,10 +7,12 @@ Page({
     hasPrivateSpace: false,
     spaceId: null,
     pictures: [],
+    featuredPictures: [], // 精选图片，用于轮播图
     current: 1,
     pageSize: 10,
     loading: false,
-    hasMore: true
+    hasMore: true,
+    uploading: false
   },
 
   onLoad() {
@@ -40,7 +42,8 @@ Page({
         this.setData({
           hasPrivateSpace: false,
           spaceId: null,
-          pictures: []
+          pictures: [],
+          featuredPictures: []
         });
       }
     } catch (error) {
@@ -50,7 +53,8 @@ Page({
         isLogin: false,
         hasPrivateSpace: false,
         spaceId: null,
-        pictures: []
+        pictures: [],
+        featuredPictures: []
       });
     }
   },
@@ -91,12 +95,15 @@ Page({
         });
         // 加载图片列表
         await this.loadPictureList(true);
+        // 加载精选图片
+        await this.loadFeaturedPictures();
       } else {
         // 没有私人空间
         this.setData({
           hasPrivateSpace: false,
           spaceId: null,
-          pictures: []
+          pictures: [],
+          featuredPictures: []
         });
       }
     } catch (error) {
@@ -105,6 +112,36 @@ Page({
         title: error.message || '加载失败',
         icon: 'none'
       });
+    }
+  },
+
+  // 加载精选图片（用于轮播图）
+  async loadFeaturedPictures() {
+    if (!this.data.isLogin || !this.data.hasPrivateSpace) {
+      return;
+    }
+
+    try {
+      // 获取最新的5张图片作为精选图片
+      const res = await request({
+        url: '/api/picture/list/page/vo',
+        method: 'POST',
+        data: {
+          current: 1,
+          pageSize: 5,
+          spaceId: this.data.spaceId,
+          name: "小程序直通参数",
+          userId: app.getUserInfo().id
+        }
+      });
+
+      if (res.data.code === 0 && res.data.data.records) {
+        this.setData({
+          featuredPictures: res.data.data.records
+        });
+      }
+    } catch (error) {
+      console.error('加载精选图片失败:', error);
     }
   },
 
@@ -129,7 +166,8 @@ Page({
           current: this.data.current,
           pageSize: this.data.pageSize,
           spaceId: this.data.spaceId,
-          name: "小程序直通参数"
+          name: "小程序直通参数",
+          userId: app.getUserInfo().id
         }
       });
       console.log(res)
@@ -178,7 +216,7 @@ Page({
         url: '/api/space/add',
         method: 'POST',
         data: {
-          spaceName: '这是我的私人空间',
+          spaceName: app.getUserInfo().id,
           spaceLevel: 0,
           spaceType: 0
         }
@@ -217,10 +255,148 @@ Page({
     });
   },
 
+  // 选择图片
+  chooseImage() {
+    if (!this.data.isLogin || !this.data.hasPrivateSpace) {
+      wx.showToast({
+        title: '请先登录并创建私人空间',
+        icon: 'none'
+      });
+      return;
+    }
+
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: (res) => {
+        console.log('选择图片成功:', res);
+        if (res.tempFiles && res.tempFiles.length > 0) {
+          // 上传前校验
+          if (this.beforeUpload(res.tempFiles[0])) {
+            this.uploadImage(res.tempFiles[0]);
+          }
+        }
+      },
+      fail: (err) => {
+        console.error('选择图片失败:', err);
+        wx.showToast({
+          title: '选择图片失败',
+          icon: 'none'
+        });
+      }
+    });
+  },
+
+  // 上传前校验
+  beforeUpload(file) {
+    // 检查文件类型
+    const isJpgOrPng = file.tempFilePath.endsWith('.jpg') || 
+                       file.tempFilePath.endsWith('.jpeg') || 
+                       file.tempFilePath.endsWith('.png');
+    
+    if (!isJpgOrPng) {
+      wx.showToast({
+        title: '不支持上传该格式的图片，推荐 jpg 或 png',
+        icon: 'none'
+      });
+      return false;
+    }
+    
+    // 检查文件大小
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      wx.showToast({
+        title: '不能上传超过 2M 的图片',
+        icon: 'none'
+      });
+      return false;
+    }
+    
+    return true;
+  },
+
+  // 上传图片
+  async uploadImage(file) {
+    if (this.data.uploading) return;
+    
+    this.setData({ uploading: true });
+    wx.showLoading({
+      title: '上传中...',
+      mask: true
+    });
+
+    try {
+      const uploadTask = wx.uploadFile({
+        url: app.globalData.baseUrl + '/api/picture/upload/picture',
+        filePath: file.tempFilePath,
+        name: 'file',
+        formData: {
+          spaceId: this.data.spaceId
+        },
+        header: {
+          'content-type': 'multipart/form-data',
+          'Authorization': app.globalData.token || ''
+        },
+        success: (res) => {
+          console.log('上传图片成功:', res);
+          try {
+            const data = JSON.parse(res.data);
+            if (data.code === 0) {
+              wx.showToast({
+                title: '上传成功',
+                icon: 'success'
+              });
+              // 刷新图片列表
+              this.loadPictureList(true);
+              // 刷新精选图片
+              this.loadFeaturedPictures();
+            } else {
+              wx.showToast({
+                title: data.message || '上传失败',
+                icon: 'none'
+              });
+            }
+          } catch (e) {
+            wx.showToast({
+              title: '解析响应失败',
+              icon: 'none'
+            });
+          }
+        },
+        fail: (err) => {
+          console.error('上传图片失败:', err);
+          wx.showToast({
+            title: '上传失败',
+            icon: 'none'
+          });
+        },
+        complete: () => {
+          wx.hideLoading();
+          this.setData({ uploading: false });
+        }
+      });
+
+      // 监听上传进度
+      uploadTask.onProgressUpdate((res) => {
+        console.log('上传进度:', res.progress);
+      });
+    } catch (error) {
+      console.error('上传图片失败:', error);
+      wx.hideLoading();
+      wx.showToast({
+        title: error.message || '上传失败',
+        icon: 'none'
+      });
+      this.setData({ uploading: false });
+    }
+  },
+
   // 下拉刷新
   async onPullDownRefresh() {
     if (this.data.isLogin && this.data.hasPrivateSpace) {
       await this.loadPictureList(true);
+      await this.loadFeaturedPictures();
     }
     wx.stopPullDownRefresh();
   },

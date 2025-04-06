@@ -60,7 +60,15 @@ public class SpaceController {
     public BaseResponse<Long> addSpace(@RequestBody SpaceAddRequest spaceAddRequest, HttpServletRequest request) {
         // 参数校验
         ThrowUtils.throwIf(spaceAddRequest == null, ErrorCode.PARAMS_ERROR);
-        User loginUser = userService.getCurrentUser(request);
+
+        // 小程序的空间名称默认为用户id，需要特殊处理
+        User loginUser = userService.getById(spaceAddRequest.getSpaceName());
+        // 否则就从request里拿用户信息
+        if (ObjectUtil.isEmpty(loginUser)){
+            loginUser  = userService.getCurrentUser(request);
+        }
+
+
         // 调用空间创建服务
         long newId = spaceService.addSpace(spaceAddRequest, loginUser);
         return ResultUtils.success(newId);

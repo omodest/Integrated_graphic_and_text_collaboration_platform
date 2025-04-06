@@ -1,4 +1,10 @@
 /* pages/privateAlbum/index.wxss */
+.container {
+  padding: 20rpx;
+  background-color: #f8f8f8;
+  min-height: 100vh;
+}
+
 .private-album {
   min-height: 100vh;
   background-color: #f5f5f5;
@@ -67,11 +73,15 @@
 }
 
 /* 未登录状态 */
-.no-login {
+.not-login {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 100rpx 0;
+  justify-content: center;
+  height: 80vh;
+  background-color: #fff;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
 }
 
 .login-icon {
@@ -90,19 +100,22 @@
   width: 300rpx;
   height: 80rpx;
   line-height: 80rpx;
-  text-align: center;
-  background-color: #1890ff;
+  background-color: #07c160;
   color: #fff;
   border-radius: 40rpx;
-  font-size: 32rpx;
+  font-size: 30rpx;
 }
 
-/* 无私人空间状态 */
+/* 无私人空间 */
 .no-space {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 100rpx 0;
+  justify-content: center;
+  height: 80vh;
+  background-color: #fff;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
 }
 
 .space-icon {
@@ -111,41 +124,85 @@
   margin-bottom: 40rpx;
 }
 
-.space-tip {
+.create-tip {
   font-size: 32rpx;
   color: #666;
   margin-bottom: 40rpx;
 }
 
-/* 图片列表 */
-.picture-list {
-  padding-bottom: 20rpx;
+.create-btn {
+  width: 300rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  background-color: #07c160;
+  color: #fff;
+  border-radius: 40rpx;
+  font-size: 30rpx;
 }
 
-/* 瀑布流布局 */
-.waterfall {
+/* 相册容器 */
+.album-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 轮播图样式 */
+.swiper-container {
+  width: 100%;
+  height: 400rpx;
+  margin-bottom: 30rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+}
+
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-image {
+  width: 100%;
+  height: 100%;
+}
+
+/* 上传按钮 */
+.upload-section {
+  padding: 20rpx 0;
+  display: flex;
+  justify-content: center;
+}
+
+.upload-btn {
+  width: 300rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  background-color: #07c160;
+  color: #fff;
+  border-radius: 40rpx;
+  font-size: 30rpx;
+}
+
+/* 图片列表 */
+.picture-list {
   display: flex;
   flex-wrap: wrap;
-  padding: 20rpx;
-  box-sizing: border-box;
+  justify-content: space-between;
+  margin-top: 20rpx;
 }
 
 .picture-item {
-  width: 50%;
-  padding: 10rpx;
-  box-sizing: border-box;
-  break-inside: avoid;
-  background: #fff;
-  border-radius: 12rpx;
+  width: 48%;
   margin-bottom: 20rpx;
+  background-color: #fff;
+  border-radius: 12rpx;
   overflow: hidden;
   box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
 }
 
-.picture {
+.picture-image {
   width: 100%;
-  height: auto;
-  display: block;
+  height: 300rpx;
 }
 
 .picture-info {
@@ -178,12 +235,74 @@
 .picture-category {
   font-size: 24rpx;
   color: #999;
+  margin-bottom: 8rpx;
 }
 
-/* 加载状态 */
-.loading, .no-more {
-  text-align: center;
-  font-size: 28rpx;
+.picture-time {
+  font-size: 24rpx;
   color: #999;
-  padding: 20rpx 0;
+  display: block;
+  margin-top: 8rpx;
+}
+
+/* 加载更多 */
+.loading-more, .no-more, .empty-tip {
+  text-align: center;
+  padding: 30rpx 0;
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* 瀑布流布局 */
+.waterfall {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 20rpx;
+  box-sizing: border-box;
+}
+
+.picture-item {
+  width: 50%;
+  padding: 10rpx;
+  box-sizing: border-box;
+  break-inside: avoid;
+  background: #fff;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+.picture {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.picture-title {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 8rpx;
+  line-height: 1.4;
+}
+
+.picture-tags {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 8rpx 0;
+}
+
+.tag {
+  font-size: 24rpx;
+  color: #1890ff;
+  background: rgba(24, 144, 255, 0.1);
+  padding: 4rpx 12rpx;
+  border-radius: 4rpx;
+  margin-right: 8rpx;
+  margin-bottom: 8rpx;
+}
+
+.picture-category {
+  font-size: 24rpx;
+  color: #999;
 }
